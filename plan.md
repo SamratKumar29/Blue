@@ -1,4 +1,5 @@
 # plan.md — Blue: Work & Productivity Companion
+
 ### Google Cloud AI Builder Cup 2026 · Theme: Future of Work & Enterprise Productivity
 
 > **This file is the single source of truth for building the project and for handing work between LLM sessions.**
@@ -9,12 +10,14 @@
 ## 0. HOW TO USE THIS FILE (READ FIRST, EVERY SESSION)
 
 **Session start routine (do this every time, in order):**
+
 1. Read sections 0 to 4 completely.
 2. Go to section 4 ("Progress tracker"). Read `CURRENT POINTER` and the last 5 lines of the Progress Log.
 3. Run `git status` and `git log --oneline -5` to confirm the repo matches the log. If the log says a step is done but the files are missing, un-tick that step and redo it.
 4. Find the **first unchecked step (`- [ ]`)** in the phases below. That is your task. Do not skip ahead.
 
 **How to do a step:**
+
 1. Read the whole step: Goal, Do, Files, Verify.
 2. Do exactly what "Do" says. If something is unclear, choose the simplest option that satisfies "Verify".
 3. Run every command listed under "Verify". The step is done only if all of them pass.
@@ -27,6 +30,7 @@
 **Symbols:** `- [ ]` not done · `- [x]` done and verified · `- [!]` blocked (write the reason on the line below and in "Blockers").
 
 **Hard rules for all models:**
+
 - Never mark a step done without running its Verify. Never delete or reorder steps. To add work, insert a new step with an id like `S4.3a`.
 - One step at a time. Do not start a phase until the previous phase's **Gate** is fully ticked.
 - Never commit secrets (API keys, tokens, `.env`). Never put real personal data in the repo; sample data is fictional.
@@ -41,28 +45,33 @@
 ## 1. GOALS (self-contained summary; the user's Goals.md was not attached)
 
 ### 1.1 What we are building
+
 **Blue** is a privacy-first, personal AI work companion for employees. Tagline: **"My Blue is my Blue, not your Blue."**
 It reads only the sources the user approves, turns them into a calm morning roundup, sorts tasks into **Easy wins / Next up / Needs senior help**, detects blockers, helps the user ask for help early, drafts messages (never sends without an exact-content approval), and offers optional, private wellbeing check-ins. Managers get no dashboard, no scores, no private memory.
 
 ### 1.2 Competition requirements (hard constraints)
-| Requirement | Source rule | How we satisfy it |
-|---|---|---|
-| Challenge theme | Choose exactly one theme | **Future of Work & Enterprise Productivity** |
-| Uses Google AI | Gemini or Gemma, or Agent Platform / Antigravity / AI Studio | Gemma (local, in browser) + Gemini (cloud, via server) |
-| Deployed on Google Cloud | Cloud Run or Firebase | **Cloud Run** (one service serving UI + API) |
-| Working prototype | Not a mockup | Real flows with sample data and real model calls |
-| Public GitHub repo | Public access | Phase 9 |
-| Deck as PDF, max 5 MB | Form upload | Phase 9 |
-| Demo video, max 3 minutes | Public YouTube/Vimeo/Drive link | Phase 9 |
-| Brief description incl. how Google services are used | Form text box | Phase 9 |
-| All materials in English | Rules | Yes |
+
+| Requirement                                          | Source rule                                                  | How we satisfy it                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------ |
+| Challenge theme                                      | Choose exactly one theme                                     | **Future of Work & Enterprise Productivity**           |
+| Uses Google AI                                       | Gemini or Gemma, or Agent Platform / Antigravity / AI Studio | Gemma (local, in browser) + Gemini (cloud, via server) |
+| Deployed on Google Cloud                             | Cloud Run or Firebase                                        | **Cloud Run** (one service serving UI + API)           |
+| Working prototype                                    | Not a mockup                                                 | Real flows with sample data and real model calls       |
+| Public GitHub repo                                   | Public access                                                | Phase 9                                                |
+| Deck as PDF, max 5 MB                                | Form upload                                                  | Phase 9                                                |
+| Demo video, max 3 minutes                            | Public YouTube/Vimeo/Drive link                              | Phase 9                                                |
+| Brief description incl. how Google services are used | Form text box                                                | Phase 9                                                |
+| All materials in English                             | Rules                                                        | Yes                                                    |
+
 **Deadline: 18 Oct 2026.** Our internal target for submitting: **17 Oct 2026**.
 
 ### 1.3 Judging weights (optimize for these)
+
 Technical merit and meaningful Gen AI use **40%** · Problem alignment and impact **25%** · Innovation and differentiation **25%** · UX and solution design **10%**.
 Our differentiators vs "Copilot-style" assistants: employee-owned, local-first, read-only by default, deterministic **policy gate** outside the model, no codebase access, no manager surveillance, culture of "asking for help is a strength".
 
 ### 1.4 Product principles (must be visible in the product, not just the slides)
+
 1. Personal ownership: user controls memory, permissions, retention.
 2. Least privilege: read-only by default; every write needs a preview and an explicit click bound to the exact content.
 3. Hyper-local memory: store compressed summaries and pointers, never raw email/chat bodies.
@@ -73,6 +82,7 @@ Our differentiators vs "Copilot-style" assistants: employee-owned, local-first, 
 8. User control: pause, mute, inspect, export, reset, delete.
 
 ### 1.5 Scope boundaries
+
 **In MVP:** dashboard + bubble + settings UI; sample "Demo Workspace" connector; local encrypted memory; task triage; morning roundup; ask-a-senior; draft message with approval gate; policy retrieval over sample docs; privacy panel; audit log; work-hours behavior; Gemini via Cloud Run; Gemma in-browser (time-boxed).
 **Out of MVP (mention only as roadmap):** real Slack/Gmail OAuth, Blue-to-Blue, screen capture, native desktop bubble (Electron), multilingual, admin policy packs.
 
@@ -128,7 +138,7 @@ blue/
 
 ## 4. PROGRESS TRACKER (update after every step)
 
-**CURRENT POINTER:** `S0.1`
+**CURRENT POINTER:** `S2.1`
 
 **Schedule (target, adjust if needed):**
 | Day | Date | Phases |
@@ -142,8 +152,9 @@ blue/
 | Buffer | Sun 18 Oct | Deadline day: only fixes, never new features |
 
 **Phase gates:**
-- [ ] Phase 0 gate passed
-- [ ] Phase 1 gate passed
+
+- [x] Phase 0 gate passed
+- [x] Phase 1 gate passed
 - [ ] Phase 2 gate passed
 - [ ] Phase 3 gate passed
 - [ ] Phase 4 gate passed
@@ -154,44 +165,58 @@ blue/
 - [ ] Phase 9 gate passed (SUBMITTED)
 
 **Progress log** (newest at the bottom; format: `date | step | model | note`):
+
 ```
 2026-10-12 | plan created | Claude | initial plan.md written
+2026-10-12 | S0.1 | Antigravity | team of 2 registered, both eligible (21+ JAPAC working professionals)
+2026-10-12 | S0.2 | Antigravity | node v20.20.2 (nvm), npm 10.8.2, git 2.43.0, gcloud 588.0.0; docker via Windows Docker Desktop (WSL integration)
+2026-10-12 | S0.3 | Antigravity | git init, .gitignore, .env.example, docs/ created
+2026-10-12 | S0.4 | Antigravity | GCP project pending user setup; fallback: continue without cloud until Phase 7
+2026-10-12 | S0.5 | Antigravity | @google/genai SDK, gemini-3.8-flash (stable); Vertex mode via vertexai:true + project/location
+2026-10-12 | S0.6 | Antigravity | @litert-lm/core, Gemma 4 E2B/E4B/12B/26B-A4B/31B .litertlm files, WebGPU required, HuggingFace hosted, Gemma Terms of Use
+2026-10-12 | S1.1-S1.9 | Antigravity | Client + server scaffolded, Tailwind tokens, Blue mascot SVG, Home dashboard, Bubble, 8-section Settings modal, static routes, screenshots captured (docs/screens/)
 ```
 
-**Blockers:** (none)
+**Blockers:** S0.4 GCP project not yet set up (user will provide when ready); continue Phases 1-3 without cloud.
 
 **Decisions log** (anything the user decided later):
-(none)
+
+- 2026-10-12: Team confirmed: 2 members registered, both 21+ JAPAC working professionals eligible.
+- 2026-10-12: Docker: user has Docker Desktop on Windows with WSL integration (no Docker in WSL distro directly).
+- 2026-10-12: gcloud: installed to ~/google-cloud-sdk via standalone installer (no sudo needed).
+- 2026-10-12: Gemma local model: default to E2B (smallest, most practical in browser); user can choose model file.
+- 2026-10-12: GCP project ID: TBD (user setting up).
 
 ---
 
 # PHASE 0 — Setup and verification (about 2 hours)
 
-- [ ] **S0.1 Confirm eligibility and team registration (human step, then log it)**
+- [x] **S0.1 Confirm eligibility and team registration (human step, then log it)**
   - Goal: avoid building something we are not allowed to submit.
   - Do: Ask the user to confirm (a) the team of 2 is registered on the AI Builder Cup portal (the site's FAQ says team formation closed 11 Oct, but its overview page says 14 Oct; confirm with organizers), (a2) both members are 21+ and based in JAPAC, and (b) the user has checked with support+aibuildercup@hack2skill.com that his status counts as a "working professional" (students are not eligible and can be disqualified later). Write the user's answer in the Decisions log.
   - Verify: Decisions log has an entry. If the user says it is unresolved, continue building but add a Blocker note "eligibility unconfirmed".
 
-- [ ] **S0.2 Check the local tools**
+- [x] **S0.2 Check the local tools**
   - Do: run `node -v` (need 20 or higher), `npm -v`, `git --version`, `docker --version` (optional), `gcloud --version`.
   - If gcloud is missing, tell the user to install the Google Cloud CLI and run `gcloud auth login`. Do not continue Phase 7 without it.
   - Verify: node is v20+; git works. Write versions in the log.
 
-- [ ] **S0.3 Create the repo**
+- [x] **S0.3 Create the repo**
   - Do: `mkdir blue && cd blue && git init`. Copy this `plan.md` into the root. Create `.gitignore` with: `node_modules`, `dist`, `.env`, `.env.*` (but keep `.env.example`), `*.log`, `.DS_Store`, `coverage`, `server/public`.
   - Create `.env.example` containing only placeholder names (no values): `PORT=8080`, `GEMINI_MODEL=`, `GEMINI_API_KEY=`, `USE_VERTEX=false`, `GOOGLE_CLOUD_PROJECT=`, `GOOGLE_CLOUD_LOCATION=`.
   - Verify: `git status` shows the files; `.gitignore` contains `.env`.
 
-- [ ] **S0.4 Google Cloud project and billing (human step)**
+- [!] **S0.4 Google Cloud project and billing (human step)**
+  - Blocked: GCP project ID not yet provided. Will continue Phases 1-3, block Phase 7 until done.
   - Do: ask the user for the GCP project ID and whether billing/credits are active. Write the project ID in the Decisions log. Then run: `gcloud config set project <PROJECT_ID>` and `gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com secretmanager.googleapis.com`.
   - Verify: `gcloud services list --enabled | grep -E "run|aiplatform"` shows both.
   - Fallback if the user has no project yet: continue Phases 1 to 3 (they need no cloud). Block Phase 4 until done.
 
-- [ ] **S0.5 VERIFY the Gemini SDK and model ID**
+- [x] **S0.5 VERIFY the Gemini SDK and model ID**
   - Do: open https://ai.google.dev/gemini-api/docs (quickstart and models page). Find (1) the current official JavaScript package name for the Gen AI SDK, (2) how to call generateContent with a system instruction and a JSON response schema, (3) how to enable Vertex AI mode, (4) the current recommended fast Gemini model ID. Create `docs/verified-apis.md` and write what you found, with the URL and date.
   - Verify: the file exists and lists package name, example call, vertex-mode flag, model ID.
 
-- [ ] **S0.6 VERIFY the in-browser Gemma runtime (research only, no coding)**
+- [x] **S0.6 VERIFY the in-browser Gemma runtime (research only, no coding)**
   - Do: open these pages and record in `docs/verified-apis.md`: https://ai.google.dev/gemma/docs , https://ai.google.dev/gemma/docs/releases , https://developers.google.com/edge/litert-lm/overview , https://developers.google.com/edge/litert-lm/js . Record: the exact Gemma model names offered for web, the npm package for the JS API, model file format, approximate download size, license terms (can we host the file ourselves, or must each user download it?), and browser requirements (WebGPU?).
   - The plan's PDF mentions "Gemma 4" variants (E2B, E4B, 12B, 26B A4B, 31B). Do not assume; confirm.
   - Verify: `docs/verified-apis.md` has a "Gemma web" section with those 6 facts. If the docs contradict the plan, write "DOCS DIFFER" and tell the user.
@@ -204,7 +229,7 @@ blue/
 
 Goal: the app looks like the approved mock (3 panels: side bubble, dashboard, settings) before any AI is wired. Use hardcoded sample content for now.
 
-- [ ] **S1.1 Scaffold client and server packages**
+- [x] **S1.1 Scaffold client and server packages**
   - Do:
     1. `npm create vite@latest client -- --template react-ts` then `cd client && npm i`.
     2. `cd client && npm i react-router-dom zustand lucide-react idb` and `npm i -D vitest tailwindcss@3.4 postcss autoprefixer`.
@@ -213,21 +238,21 @@ Goal: the app looks like the approved mock (3 panels: side bubble, dashboard, se
     5. Root `package.json` scripts are optional; document in README: run client with `npm run dev` in `client/`, server with `npm run dev` in `server/`.
   - Verify: `cd client && npm run build` succeeds.
 
-- [ ] **S1.2 Tailwind and design tokens**
+- [x] **S1.2 Tailwind and design tokens**
   - Do: `cd client && npx tailwindcss init -p`. In `tailwind.config.js` set `content: ['./index.html','./src/**/*.{ts,tsx}']`. Add to `theme.extend.colors`: `navy: { 900:'#0B1636', 800:'#102048', 700:'#1B2D63' }`, `blue: { 50:'#EEF4FF', 100:'#DCE8FF', 500:'#3B6CF6', 600:'#2F59D9' }`, `ink: '#1B2547'`, `muted: '#6B7692'`, `good:'#2BB673'`, `warn:'#F5B83D'`. Add `borderRadius: { card:'16px' }` and `boxShadow: { card:'0 6px 24px rgba(30,60,140,0.08)' }`. Replace `src/styles/index.css` with the three `@tailwind` directives plus `body { @apply bg-slate-50 text-ink; font-family: Inter, system-ui, sans-serif; }`.
   - Verify: add `<div className="bg-blue-500 text-white p-4 rounded-card">test</div>` to `App.tsx`, run `npm run dev`, confirm a blue rounded box appears, then remove the test.
 
-- [ ] **S1.3 BlueMascot component (SVG)**
+- [x] **S1.3 BlueMascot component (SVG)**
   - Files: `client/src/components/BlueMascot.tsx`.
   - Do: build an inline SVG, props `{ size?: number; mood?: 'happy'|'wink'|'calm' }`. Shape: a rounded blob body filled with a blue linear gradient (#6FA0FF to #3B6CF6), a white rounded face area, two dark oval eyes with small white highlights, small pink cheeks, and a small leaf/antenna on top. `wink` closes the right eye as a curve. Keep it under 80 lines.
   - Verify: render all three moods on a temporary page; they display without errors.
 
-- [ ] **S1.4 App shell: left rail and routing**
+- [x] **S1.4 App shell: left rail and routing**
   - Files: `components/Sidebar.tsx`, `App.tsx`, `main.tsx`, `pages/*.tsx` (empty placeholders).
   - Do: use react-router with routes `/` Home, `/chat`, `/tasks`, `/calendar`, `/files`, `/team`, `/apps`, `/outbox`. The Sidebar is a dark navy (bg-navy-900) vertical rail, ~80px wide, with the "B" logo on top, then icon+label items (lucide icons): Home, Chat, Tasks, Calendar, Files, Team, Apps, then a Blue mascot mini-bubble and the user avatar at the bottom. The active item has a lighter navy rounded background. Make labels tiny (11px) under the icons like the mock.
   - Verify: clicking each nav item changes the URL and highlights the item; keyboard Tab reaches every item; each item has an `aria-label`.
 
-- [ ] **S1.5 Home dashboard (static)**
+- [x] **S1.5 Home dashboard (static)**
   - Files: `pages/Home.tsx` plus components `HeroCard`, `TaskGroupCard`, `TeamUpdatesCard`, `QuickActions`, `ProgressCard`, `RecentActivity`, `StatusPill`.
   - Do: reproduce the mock layout in a 2-column grid under a gradient hero.
     - Hero: pale blue-to-peach "sunrise" gradient, greeting "Good morning, {name}!" (time-based: morning/afternoon/evening), subtitle "Blue here. I've got your roundup for today.", an "Active" green pill, notification bell, avatar. Under it a white card with the mascot and "Your day, simplified" with a one-line subtitle.
@@ -236,22 +261,22 @@ Goal: the app looks like the approved mock (3 panels: side bubble, dashboard, se
     - Use hardcoded arrays for now.
   - Verify: side by side with the mock image, the structure matches; the page is usable at 1280px wide and does not scroll sideways at 1024px.
 
-- [ ] **S1.6 Floating Blue bubble widget**
+- [x] **S1.6 Floating Blue bubble widget**
   - Files: `components/Bubble.tsx`.
   - Do: a fixed bottom-right widget. Collapsed: a 56px mascot circle with a small status dot (green active, grey sleeping) and no content. On hover or click: expands into a white rounded card (~300px) with the mascot winking, the text "Hey! I'm Blue" and "How can I help you today?", three pill buttons: "Show my tasks" (navigates to /tasks), "Check team updates" (navigates to /), "Ask something" (navigates to /chat), and a small settings gear that opens Settings. Press Esc to collapse. A `prefers-reduced-motion` check disables animation.
   - Verify: bubble appears on every page; expands and collapses by mouse and keyboard; the collapsed state shows no sensitive text.
 
-- [ ] **S1.7 Settings modal (static)**
+- [x] **S1.7 Settings modal (static)**
   - Files: `settings/SettingsModal.tsx` and one component per section: `General`, `PrivacyData`, `AiModel`, `Connectors`, `Notifications`, `WorkHours`, `Appearance`, `About`.
   - Do: a centered modal (~900px wide) with a left list of sections (icons: settings, shield, cpu, plug, bell, clock, palette, info) and a right content panel; a close X. Opened from the gear in the bubble and from a gear in the dashboard header. Build **General** exactly like the mock: Your Name input, Timezone select (default "(GMT+5:30) India Standard Time"), Language select (English only for now), "Blue's Presence" segmented control (Work hours only | Laptop awake) with the helper text "Blue will wake 30 minutes before your workday and sleep after your work hours.", a "Local AI Model" card (placeholder), "Privacy Quick Controls" with three toggles (Allow writing (with approval), Allow connectors, Allow team context) and a footer note "Your data stays with you. Always. My Blue is my Blue, not your Blue." Other sections can be a title and a short description for now.
   - Build a reusable `Toggle` component (accessible: `role="switch"`, `aria-checked`, keyboard Space/Enter).
   - Verify: the modal opens, closes with Esc and the X, traps focus while open; toggles work by keyboard.
 
-- [ ] **S1.8 Other pages (static)**
+- [x] **S1.8 Other pages (static)**
   - Do: `Tasks` (same three groups in a larger layout plus an "Add task" input), `Chat` (message list + input box + "Blue is private" note), `Calendar` (today's events list), `Files` (list of approved policy/project documents with a lock icon and "read-only"), `Team` (people cards with role and expertise tags, plus a "Ask a senior" button on each), `Apps` (connector cards: Demo Workspace, Slack, Gmail, Google Calendar with status chips; only Demo Workspace is "available", the others say "Roadmap"), `Outbox` ("Demo outbox: nothing is actually sent").
   - Verify: every route renders a meaningful static page; no console errors.
 
-- [ ] **S1.9 Accessibility and responsiveness baseline**
+- [x] **S1.9 Accessibility and responsiveness baseline**
   - Do: add visible focus rings (`focus-visible:ring-2 ring-blue-500`), ensure text contrast is readable, add `aria-label`s on icon buttons, make the Sidebar collapse into a bottom bar under 768px width.
   - Verify: run Lighthouse accessibility in Chrome DevTools on `/`; score is 90+ (note the score in the log).
 
@@ -264,41 +289,86 @@ Goal: the app looks like the approved mock (3 panels: side bubble, dashboard, se
 - [ ] **S2.1 Core types**
   - Files: `client/src/core/types.ts`.
   - Do: define and export (exact names matter, later steps import them):
+
 ```ts
-export type Effort = 'easy' | 'medium' | 'deep';
-export type TaskGroup = 'easy_wins' | 'next_up' | 'needs_senior';
-export type SourceCategory = 'chat' | 'email' | 'calendar' | 'policy' | 'manual';
+export type Effort = "easy" | "medium" | "deep";
+export type TaskGroup = "easy_wins" | "next_up" | "needs_senior";
+export type SourceCategory =
+  | "chat"
+  | "email"
+  | "calendar"
+  | "policy"
+  | "manual";
 
 export interface Explanation {
   sourceCategory: SourceCategory;
-  confidence: number;        // 0..1
-  reason: string;            // one sentence, plain English
+  confidence: number; // 0..1
+  reason: string; // one sentence, plain English
 }
-export interface Provenance { source: 'demo-slack'|'demo-gmail'|'demo-calendar'|'policy'|'manual'; ref: string; } // ref = item id, never a body
+export interface Provenance {
+  source: "demo-slack" | "demo-gmail" | "demo-calendar" | "policy" | "manual";
+  ref: string;
+} // ref = item id, never a body
 export interface Task {
-  id: string; title: string; project: string;
-  estimateMin: number; effort: Effort; group: TaskGroup;
-  urgency: 'low'|'med'|'high'; status: 'todo'|'done';
-  dependsOn?: string[]; blocker?: string; suggestedHelperId?: string;
-  explanation: Explanation; provenance?: Provenance;
-  createdAt: string; completedAt?: string;
+  id: string;
+  title: string;
+  project: string;
+  estimateMin: number;
+  effort: Effort;
+  group: TaskGroup;
+  urgency: "low" | "med" | "high";
+  status: "todo" | "done";
+  dependsOn?: string[];
+  blocker?: string;
+  suggestedHelperId?: string;
+  explanation: Explanation;
+  provenance?: Provenance;
+  createdAt: string;
+  completedAt?: string;
 }
 export interface Settings {
-  name: string; timezone: string; language: 'en';
-  presence: 'work_hours' | 'laptop_awake';
-  workStart: string; workEnd: string;      // 'HH:mm'
-  waterReminderMin: number | null;         // e.g. 90 or null
-  allowWriting: boolean; allowConnectors: boolean; allowTeamContext: boolean;
-  modelMode: 'local' | 'cloud';
+  name: string;
+  timezone: string;
+  language: "en";
+  presence: "work_hours" | "laptop_awake";
+  workStart: string;
+  workEnd: string; // 'HH:mm'
+  waterReminderMin: number | null; // e.g. 90 or null
+  allowWriting: boolean;
+  allowConnectors: boolean;
+  allowTeamContext: boolean;
+  modelMode: "local" | "cloud";
   cloudConsentGiven: boolean;
-  praise: boolean; checkins: boolean; toneObservations: boolean;
-  paused: boolean; retentionDays: number;
+  praise: boolean;
+  checkins: boolean;
+  toneObservations: boolean;
+  paused: boolean;
+  retentionDays: number;
 }
-export interface AuditEntry { id: string; at: string; action: string; allowed: boolean; detail: string; } // NEVER a message body
-export interface OutboxItem { id: string; at: string; recipient: string; content: string; approvedHash: string; }
-export interface Summary { id: string; at: string; kind: 'roundup'|'digest'|'note'; text: string; sources: Provenance[]; }
+export interface AuditEntry {
+  id: string;
+  at: string;
+  action: string;
+  allowed: boolean;
+  detail: string;
+} // NEVER a message body
+export interface OutboxItem {
+  id: string;
+  at: string;
+  recipient: string;
+  content: string;
+  approvedHash: string;
+}
+export interface Summary {
+  id: string;
+  at: string;
+  kind: "roundup" | "digest" | "note";
+  text: string;
+  sources: Provenance[];
+}
 ```
-  - Verify: `cd client && npx tsc --noEmit` passes.
+
+- Verify: `cd client && npx tsc --noEmit` passes.
 
 - [ ] **S2.2 Sample data ("Demo Workspace")**
   - Files in `client/src/data/`. All content fictional. Use persona: user "Alex Johnson", product team, project names "Atlas" (web app), "Orion Billing".
@@ -338,29 +408,47 @@ The policy gate is the product's trust centerpiece and a major demo moment. It i
 - [ ] **S3.1 Implement the policy gate**
   - Files: `core/policy/gate.ts`.
   - Do: implement exactly this contract:
+
 ```ts
 export type ActionType =
-  | 'read_source' | 'draft_local' | 'send_message' | 'create_event'
-  | 'edit_record' | 'delete_record' | 'cloud_inference'
-  | 'blue_to_blue' | 'screen_capture' | 'read_codebase';
+  | "read_source"
+  | "draft_local"
+  | "send_message"
+  | "create_event"
+  | "edit_record"
+  | "delete_record"
+  | "cloud_inference"
+  | "blue_to_blue"
+  | "screen_capture"
+  | "read_codebase";
 
 export interface ActionRequest {
   type: ActionType;
-  source?: string;      // e.g. 'demo-slack'
+  source?: string; // e.g. 'demo-slack'
   recipient?: string;
-  content?: string;     // the exact text/effect to be approved
+  content?: string; // the exact text/effect to be approved
   account?: string;
-  effect?: string;      // human readable, e.g. "Send message"
+  effect?: string; // human readable, e.g. "Send message"
 }
 export type Decision =
-  | { result: 'allow' }
-  | { result: 'needs_approval'; previewHash: string }
-  | { result: 'deny'; reason: string };
+  | { result: "allow" }
+  | { result: "needs_approval"; previewHash: string }
+  | { result: "deny"; reason: string };
 
-export async function hashAction(r: ActionRequest): Promise<string> { /* sha-256 hex of JSON.stringify([type,recipient,content,account,effect]) via crypto.subtle */ }
-export async function decide(r: ActionRequest, s: Settings): Promise<Decision> { /* rules below */ }
-export async function verifyApproval(r: ActionRequest, approvedHash: string): Promise<boolean> { /* recompute hash and compare */ }
+export async function hashAction(r: ActionRequest): Promise<string> {
+  /* sha-256 hex of JSON.stringify([type,recipient,content,account,effect]) via crypto.subtle */
+}
+export async function decide(r: ActionRequest, s: Settings): Promise<Decision> {
+  /* rules below */
+}
+export async function verifyApproval(
+  r: ActionRequest,
+  approvedHash: string,
+): Promise<boolean> {
+  /* recompute hash and compare */
+}
 ```
+
     Rules in `decide` (deny by default, evaluate top to bottom):
     1. `read_codebase`, `blue_to_blue`, `screen_capture` => `deny` always, with reasons: "Codebase access is never permitted.", "Blue-to-Blue is disabled; it needs mutual explicit consent (roadmap).", "Screen capture is off by default and not available in this version."
     2. `paused === true` => `deny` ("Blue is paused.").
@@ -370,7 +458,8 @@ export async function verifyApproval(r: ActionRequest, approvedHash: string): Pr
     6. `send_message`, `create_event`, `edit_record`, `delete_record` => `deny` if `!allowWriting` ("Write actions are off."), else `needs_approval` with `previewHash`.
     7. Anything else => `deny`.
     Any change to recipient/content invalidates the approval because the hash changes.
-  - Verify: `gate.test.ts` with at least these tests: codebase read denied; blue_to_blue denied even when all settings are true; send denied when `allowWriting=false`; send needs approval when true; `verifyApproval` fails after editing one character of `content`; when `paused=true`, every action including `draft_local` is denied (but `read_codebase` etc. stay denied for their own reasons). `npx vitest run` passes.
+
+- Verify: `gate.test.ts` with at least these tests: codebase read denied; blue_to_blue denied even when all settings are true; send denied when `allowWriting=false`; send needs approval when true; `verifyApproval` fails after editing one character of `content`; when `paused=true`, every action including `draft_local` is denied (but `read_codebase` etc. stay denied for their own reasons). `npx vitest run` passes.
 
 - [ ] **S3.2 First-run Permission Center**
   - Files: `components/PermissionCenter.tsx`.
@@ -417,21 +506,33 @@ export async function verifyApproval(r: ActionRequest, approvedHash: string): Pr
 - [ ] **S4.4 ModelProvider interface (client)**
   - Files: `core/ai/provider.ts`.
   - Do:
-```ts
-export interface CompleteArgs { system: string; prompt: string; jsonSchema?: object; }
+
+````ts
+export interface CompleteArgs {
+  system: string;
+  prompt: string;
+  jsonSchema?: object;
+}
 export interface ModelProvider {
-  id: 'cloud-gemini' | 'local-gemma';
-  label: string;                 // shown in UI
-  dataLeavesDevice: boolean;     // drives honest labelling (D5)
+  id: "cloud-gemini" | "local-gemma";
+  label: string; // shown in UI
+  dataLeavesDevice: boolean; // drives honest labelling (D5)
   isAvailable(): Promise<{ ok: boolean; reason?: string }>;
   complete(args: CompleteArgs): Promise<string>;
 }
-export function getProvider(settings: Settings): ModelProvider { /* returns by settings.modelMode */ }
-export async function completeJson<T>(p: ModelProvider, args: CompleteArgs, validate: (x:unknown)=>x is T): Promise<T> {
+export function getProvider(settings: Settings): ModelProvider {
+  /* returns by settings.modelMode */
+}
+export async function completeJson<T>(
+  p: ModelProvider,
+  args: CompleteArgs,
+  validate: (x: unknown) => x is T,
+): Promise<T> {
   // call p.complete, strip ``` fences, JSON.parse, validate; on failure retry ONCE with an added instruction "Return only valid JSON."; then throw
 }
-```
-  - Verify: `npx tsc --noEmit` passes.
+````
+
+- Verify: `npx tsc --noEmit` passes.
 
 - [ ] **S4.5 GeminiCloudProvider**
   - Files: `core/ai/geminiCloud.ts`.
@@ -456,6 +557,7 @@ export async function completeJson<T>(p: ModelProvider, args: CompleteArgs, vali
 # PHASE 5 — AI features (Day 4 morning). This is where the 40% "Gen AI" score is earned.
 
 General rules for all prompts (put them in `core/ai/prompts.ts` as named constants):
+
 - Every prompt begins with the **Blue persona rules**: "You are Blue, a private, calm work companion. You never blame, shame, or label the user or colleagues. You never diagnose emotions or health. You never invent facts: use only the provided items. Keep answers short and concrete."
 - Structured outputs use `completeJson` with a schema in `core/ai/schemas.ts` and a validator function.
 - Features must work with **either** provider.
@@ -545,6 +647,7 @@ General rules for all prompts (put them in `core/ai/prompts.ts` as named constan
 - [ ] **S7.1 Dockerfile (multi-stage)**
   - Files: `Dockerfile`, `.dockerignore`.
   - Do:
+
 ```dockerfile
 # --- build client
 FROM node:20-slim AS client
@@ -573,8 +676,10 @@ COPY --from=client /app/client/dist ./public
 ENV PORT=8080
 CMD ["node","dist/index.js"]
 ```
+
     Make sure `server/src/index.ts` serves static files from `path.join(__dirname,'../public')` (relative to `dist`). `.dockerignore`: `node_modules`, `.git`, `.env`, `docs`.
-  - Verify: `docker build -t blue .` then `docker run -p 8080:8080 -e GEMINI_API_KEY=... -e GEMINI_MODEL=... blue` and open http://localhost:8080 . If Docker is not installed, skip the local run and verify in S7.3 instead.
+
+- Verify: `docker build -t blue .` then `docker run -p 8080:8080 -e GEMINI_API_KEY=... -e GEMINI_MODEL=... blue` and open http://localhost:8080 . If Docker is not installed, skip the local run and verify in S7.3 instead.
 
 - [ ] **S7.2 Service account and secrets**
   - Do: (a) Use Vertex mode on Cloud Run: grant the Cloud Run runtime service account the role `roles/aiplatform.user`: `gcloud projects add-iam-policy-binding <PROJECT_ID> --member="serviceAccount:<RUNTIME_SA>" --role="roles/aiplatform.user"` (find the SA with `gcloud run services describe` after first deploy, or use the default compute service account). (b) No API key is needed in production. If the user prefers an AI Studio key, store it in Secret Manager (`gcloud secrets create gemini-key --data-file=-`) and mount it as an env var; do not paste keys into commands that get saved in history.
@@ -670,6 +775,7 @@ CMD ["node","dist/index.js"]
 # APPENDIX A — Prompt and schema reference (for `prompts.ts` and `schemas.ts`)
 
 **Blue persona (prefix for every prompt):**
+
 ```
 You are Blue, a private, calm work companion for one employee. Rules:
 - Use ONLY the items provided. Never invent facts, names, dates or links.
@@ -681,19 +787,29 @@ You are Blue, a private, calm work companion for one employee. Rules:
 ```
 
 **Triage output (JSON array):**
+
 ```json
-[{
-  "title": "string",
-  "project": "string",
-  "estimateMin": 30,
-  "effort": "easy|medium|deep",
-  "group": "easy_wins|next_up|needs_senior",
-  "urgency": "low|med|high",
-  "blocker": "string or omitted",
-  "suggestedHelperId": "team member id or omitted",
-  "explanation": { "sourceCategory": "chat|email|calendar|policy|manual", "confidence": 0.8, "reason": "one sentence" },
-  "provenance": { "source": "demo-slack|demo-gmail|demo-calendar|policy|manual", "ref": "item id" }
-}]
+[
+  {
+    "title": "string",
+    "project": "string",
+    "estimateMin": 30,
+    "effort": "easy|medium|deep",
+    "group": "easy_wins|next_up|needs_senior",
+    "urgency": "low|med|high",
+    "blocker": "string or omitted",
+    "suggestedHelperId": "team member id or omitted",
+    "explanation": {
+      "sourceCategory": "chat|email|calendar|policy|manual",
+      "confidence": 0.8,
+      "reason": "one sentence"
+    },
+    "provenance": {
+      "source": "demo-slack|demo-gmail|demo-calendar|policy|manual",
+      "ref": "item id"
+    }
+  }
+]
 ```
 
 **Help request draft (JSON):** `{ "context": "", "tried": ["",""], "ask": "", "nextStep": "", "timing": "" }`
@@ -706,17 +822,17 @@ You are Blue, a private, calm work companion for one employee. Rules:
 
 # APPENDIX B — Demo video script (target 2:45, hard max 3:00)
 
-| Time | Screen | Voice-over (short) |
-|---|---|---|
-| 0:00 to 0:15 | Title, then scattered chat/email/calendar | "Work context is scattered, and monitoring tools erode trust. Meet Blue: my Blue is my Blue, not your Blue." |
-| 0:15 to 0:35 | Permission Center | "First, the user decides. Read-only sources. Codebase access: never. Writes off. Model mode is shown honestly." |
-| 0:35 to 1:00 | Home dashboard, roundup | "Blue turns approved context into a calm roundup: quick wins first, harder tasks next, and what needs a senior." |
+| Time         | Screen                                                                                | Voice-over (short)                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 0:00 to 0:15 | Title, then scattered chat/email/calendar                                             | "Work context is scattered, and monitoring tools erode trust. Meet Blue: my Blue is my Blue, not your Blue."             |
+| 0:15 to 0:35 | Permission Center                                                                     | "First, the user decides. Read-only sources. Codebase access: never. Writes off. Model mode is shown honestly."          |
+| 0:35 to 1:00 | Home dashboard, roundup                                                               | "Blue turns approved context into a calm roundup: quick wins first, harder tasks next, and what needs a senior."         |
 | 1:00 to 1:20 | Click "Why?" on a task, show the filtered message (secret redacted, PR link excluded) | "Every recommendation explains itself. Secrets are redacted and code links are excluded before any model sees anything." |
-| 1:20 to 1:50 | Ask a Senior, then Approve dialog, then Outbox | "Asking for help early is a strength. Blue drafts a clear request. Nothing leaves without approval of the exact text." |
-| 1:50 to 2:10 | Try to write with writing off, try a Blue-to-Blue contact; Audit log shows blocks | "The policy gate sits outside the model. Unapproved writes and Blue-to-Blue messages are blocked and logged." |
-| 2:10 to 2:25 | Demo clock to 19:00, bubble sleeps | "After work hours Blue sleeps: no polling, no nudges." |
-| 2:25 to 2:40 | Architecture slide | "Gemma runs locally; Gemini on Vertex AI via Cloud Run is an opt-in cloud mode. Memory is encrypted on device." |
-| 2:40 to 2:50 | Privacy panel, "Clear my Blue", closing slogan | "Inspect, export, delete anytime. Blue makes work feel more manageable, not more watched." |
+| 1:20 to 1:50 | Ask a Senior, then Approve dialog, then Outbox                                        | "Asking for help early is a strength. Blue drafts a clear request. Nothing leaves without approval of the exact text."   |
+| 1:50 to 2:10 | Try to write with writing off, try a Blue-to-Blue contact; Audit log shows blocks     | "The policy gate sits outside the model. Unapproved writes and Blue-to-Blue messages are blocked and logged."            |
+| 2:10 to 2:25 | Demo clock to 19:00, bubble sleeps                                                    | "After work hours Blue sleeps: no polling, no nudges."                                                                   |
+| 2:25 to 2:40 | Architecture slide                                                                    | "Gemma runs locally; Gemini on Vertex AI via Cloud Run is an opt-in cloud mode. Memory is encrypted on device."          |
+| 2:40 to 2:50 | Privacy panel, "Clear my Blue", closing slogan                                        | "Inspect, export, delete anytime. Blue makes work feel more manageable, not more watched."                               |
 
 ---
 
@@ -738,4 +854,4 @@ You are Blue, a private, calm work companion for one employee. Rules:
 - [ ] Deck PDF under 5 MB, demo video under 3:00 and playable logged out
 - [ ] Form submitted before 18 Oct 2026 (target 17 Oct)
 
-*End of plan.md. Remember: tick the step, update the Progress Log and CURRENT POINTER, commit.*
+_End of plan.md. Remember: tick the step, update the Progress Log and CURRENT POINTER, commit._
