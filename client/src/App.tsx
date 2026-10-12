@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Bubble from './components/Bubble';
 import SettingsModal from './settings/SettingsModal';
+import { useBlueStore } from './store';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
 import Tasks from './pages/Tasks';
@@ -13,12 +14,17 @@ import Apps from './pages/Apps';
 import Outbox from './pages/Outbox';
 
 export default function App() {
+  const loadAll = useBlueStore((s) => s.loadAll);
   const [settingsOpen, setSettingsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       return new URLSearchParams(window.location.search).get('settings') === '1';
     }
     return false;
   });
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">

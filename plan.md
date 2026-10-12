@@ -98,7 +98,195 @@ Our differentiators vs "Copilot-style" assistants: employee-owned, local-first, 
 - **D6. Defaults match the PDF, not the mock screenshot:** write access OFF, connectors OFF until the user enables the Demo Workspace in the first-run Permission Center. (The mock UI shows toggles ON; we start OFF and the first-run flow turns on what the user chooses.)
 - **D7. "Send" is simulated.** An approved send adds the message to a local "Outbox (demo)" list. No real network send. Say so in the UI ("Demo: nothing is actually sent").
 - **D8. Data:** all sample data is fictional JSON in `client/src/data/`. Memory is stored in IndexedDB, encrypted with WebCrypto AES-GCM (non-extractable key).
-- **D9. Visual identity (from the approved mock):** dark navy sidebar, bright blue accent, soft rounded cards, light background, friendly blue blob mascot with two eyes and a small leaf on top, gradient "sunrise" hero on Home.
+- **D9. Visual identity (from the official gui_reference designs):** Official planetary Blue mascot with holographic ring, glowing cyan star antenna, translucent spectacles, dark navy sidebar (`#0B1636`), bright Google blue accent (`#3B6CF6`), soft sunrise gradient cards, priority badges (Easy/Medium/Hard), and warm glassmorphic modal workflows matching `gui_reference/`.
+
+---
+
+## 2.1 GUI REFERENCE DESIGN & DETAILED UI SPECIFICATION (from gui_reference/)
+
+The user provided the official high-fidelity UI reference designs in `gui_reference/`. The application must reproduce these screens, workflows, and character interactions exactly.
+
+### 2.1.1 Asset & Mascot Specification (`Logo.jpeg` & `2.57.55 PM.jpeg`)
+- **Official Character Asset**: `gui_reference/Logo.jpeg` (copied to `client/public/logo.jpeg` & `client/src/assets/logo.jpeg`).
+- **Visual Features**: A spherical glossy blue planetoid with large anime-style glowing eyes with highlights, transparent spectacles/glasses, a glowing cyan star antenna, and an iridescent holographic planetary ring with sparkles.
+- **Mascot Moods & Variants** (displayed contextually across views):
+  1. **Happy**: Welcoming smile, bright eyes, sparkling ring (Default & Roundup).
+  2. **Thinking**: Eyes looking upward, rotating ring with subtle tilt, question mark bubble (Analysis & Triage).
+  3. **Excited**: Wide sparkling eyes, floating with celebration confetti and star particles (Task Completed).
+  4. **Sleep Mode**: Eyes closed sleeping (zzz), calm dimmed ring, quiet night aura (Off-work hours).
+  5. **Working**: Sitting at miniature glowing laptop with focus glasses (Active background processing).
+  6. **Encouraging**: Warm smile with heart bubble, thumbs-up gesture (Wellbeing check-ins).
+- **Side Bubble**: A vertical floating dark navy capsule anchored to the right margin with Home, Blue mascot, and Chat icons plus an expandable speech bubble: *"Hey! I'm Blue 👶 Need anything?"*.
+
+### 2.1.2 Main Dashboard UI (`WhatsApp Image 2026-10-12 at 2.57.55 PM.jpeg`)
+- **Top Header Bar**:
+  - Search input with placeholder `"Q Search anything..."`
+  - Notification bell icon with unread badge counter
+  - Help icon (`?`)
+  - User avatar (`AJ` / Alex Johnson, Product Designer)
+- **Sunrise Hero Banner**:
+  - Greeting: `"Good morning, Alex! ☀️"` (time-sensitive: morning/afternoon/evening)
+  - Subtitle: `"Here's your roundup for today. Let's make it count!"`
+  - Right hero graphic: 3D Blue mascot floating in soft lilac clouds with speech bubble: `"Small steps. Big progress!" ✨`
+- **Today's Priorities Card**:
+  - Header: `"Today's Priorities"` with `"View all →"` navigation link.
+  - Priority task rows with colored pill badges:
+    - `● Easy` (Emerald green badge): e.g., *"Design review for landing page"* · `Due 10:00 AM`
+    - `● Easy` (Emerald green badge): e.g., *"Update documentation (Team)"* · `Due 11:30 AM`
+    - `● Medium` (Amber yellow badge): e.g., *"API integration discussion"* · `Due 02:00 PM`
+    - `● Hard` (Rose red badge): e.g., *"Sprint planning (need senior help)"* · `Due 04:00 PM`
+  - Interactive checkboxes to toggle task completion with instant encrypted persistence.
+- **Team Updates Card**:
+  - Header: `"Team Updates"` with `"View all →"` link.
+  - Rows:
+    - **Slack**: Slack icon, `"12 new messages"`, timestamp `"10:24 AM"`.
+    - **Gmail**: Gmail icon, `"2 important emails"`, timestamp `"09:42 AM"`.
+    - **Calendar**: Calendar icon, `"Design sync (11:00 AM)"`, timestamp `"09:30 AM"`.
+- **Mascot Progress Card**:
+  - Soft gradient banner with floating mascot: `"Great job on yesterday's tasks! >"`
+  - Subtext: `"You closed 4 tasks and helped unblock the team. That's the Blue way!"`
+  - Action button: `"Keep it up! 💙"`
+- **Quick Actions Grid (3x2)**:
+  - 1. `Ask Blue` (Blue speech bubble icon `@`)
+  - 2. `Summarize` (Document clipboard icon 📋)
+  - 3. `Write` (Pen/pencil icon ✍️)
+  - 4. `Find Help` (Search magnifier icon 🔍)
+  - 5. `Create Task` (Checkbox plus icon ☑️)
+  - 6. `More` (Ellipsis icon `...`)
+- **Your Team at a Glance (Bottom Full-Width Section)**:
+  - Team member status cards:
+    - **Alex (You)**: Avatar + `"On track"` (green pill)
+    - **Priya**: Avatar + `"In progress"` (yellow pill)
+    - **Michael**: Avatar + `"Needs help"` (rose/red pill)
+    - **Sarah**: Avatar + `"On track"` (green pill)
+  - Right callout card: `"Need help with something? Ask Blue, or request support from your team. It's a sign of strength, not weakness."` with a prominent blue `+` button triggering the Senior Routing workflow.
+
+### 2.1.3 Settings Modal UI (`WhatsApp Image 2026-10-12 at 2.57.55 PM.jpeg`)
+- **Layout**: Modal dialog with left category rail and right detailed form.
+- **Navigation Tabs**:
+  1. `General` (selected by default)
+  2. `Privacy & Data`
+  3. `AI Model`
+  4. `Connectors`
+  5. `Notifications`
+  6. `Work Hours`
+  7. `Appearance`
+  8. `About`
+- **General Tab Form Controls**:
+  - Header: `"General"` — `"Customize your Blue experience."`
+  - **Your Name**: text input with leading user icon (`Alex Johnson`).
+  - **Timezone**: select dropdown defaulting to `(GMT+5:30) India Standard Time`.
+  - **Language**: select dropdown defaulting to `English`.
+  - **Blue's Presence**: segmented pill toggle (`Work hours only` [active] | `Laptop awake`) with helper text: *"Blue will wake 30 minutes before your workday and sleep after your work hours."*
+  - **Local AI Model Card**:
+    - Chip icon + title `"Gemma 4 (Local)"` with green `"Active"` badge.
+    - Description: *"Running on your device using LiteRT-LM. No data leaves your device."*
+    - Action button: `"Change model"` (opens AI Model tab for cloud Gemini toggle).
+  - **Privacy Quick Controls**:
+    - Toggle: `"Allow writing (with approval)"` — *"Blue will ask for your permission before sending, editing, or deleting anything."*
+    - Toggle: `"Allow connectors"` — *"Enable Gmail, Slack, Calendar and other apps."*
+    - Toggle: `"Allow team context"` — *"Use team/project context (no codebase access)."*
+  - **Footer Privacy Assurance Box**:
+    - Blue lock icon + bold statement: *"Your data stays with you. Always. My Blue is my Blue, not your Blue."*
+
+### 2.1.4 Interactive Modal Workflows & State Machines
+
+#### A. Task Analysis & Assistant Dialog (`WhatsApp Image 2026-10-12 at 10.31.23 PM.jpeg`)
+- Triggered by clicking any task or typing in Ask Blue.
+- **Header**: Mascot avatar, `"Blue"` — `"Thinking. Analyzing. Finding the best way..."`, close `✕`.
+- **Mascot Speech Bubble**: `"Got it! Let me analyze this task and figure out the best way to help you."`
+- **Task Header Card**: Document icon + Task Title (e.g., *"Build the analytics dashboard for Q2"*) + description (*"This seems to involve data analysis, visualization and multiple systems."*).
+- **My Analysis Breakdown**:
+  - `Task complexity`: Moderate to High (requires domain knowledge + data access) → `High` badge.
+  - `Can Frontier LLMs help?`: Yes, for research, ideation, and drafting → `Possible` badge.
+  - `Need a senior expert?`: Yes, for final architecture, data access and business context → `Likely` badge.
+- **What I'll do (with your permission)**:
+  - 1. Use Frontier LLMs to gather best practices and draft an initial plan.
+  - 2. Route to a senior (Data & Analytics Lead) for domain expertise and data access guidance.
+  - 3. Keep your data private — only task summaries will be shared.
+- **Privacy Confirmation**: *"I won't take any action (like scheduling or sharing) without your explicit permission. Would you like me to proceed with this plan?"*
+- **Action Footer**: Audio button (🔊), `"✓ Yes, proceed"` (primary blue button), `"✕ No, abort"` (white button with border), `...` button.
+
+#### B. "Ask a Senior" End-to-End Workflow (`WhatsApp Image 2026-10-12 at 10.38.42 PM.jpeg` & `10.41.28 PM.jpeg`)
+A 6-step collaborative guidance journey:
+1. **Step 1 — Request Sent to Senior**:
+   - Mascot floating with paper planes + Priya Sharma profile card (`Senior Product Designer`, `Request sent` badge).
+   - "What was shared": Task details & goals, Relevant background & context, Suggested approach & questions, Deadline and priority.
+   - Lock card: *"Your data stays private. Only what's needed is shared with Priya."*
+2. **Step 2 — Senior Receives & Responds**:
+   - Priya Sharma's simulated view: *"Blue has requested your help: Hi Priya! I could use your expertise on a product strategy question..."*
+   - Buttons: `Accept` (blue), `Decline` (white), `→ View details`.
+3. **Step 3 — Notification to Blue**:
+   - Mascot in celebration halo: *"Great news! Priya has accepted your request. I'll now check their calendar and suggest a meeting time based on their availability."*
+   - Animated calendar check: `"Checking Priya's calendar..."` with loader dots.
+4. **Step 4 — Proposed Meeting Details (Needs Your Approval)**:
+   - Meeting card: *"Strategy Discussion — Product Direction"*, With Priya Sharma, Date & Time (Wed, Apr 30, 2025 · 11:00 AM - 11:45 AM), Google Meet.
+   - Meeting context checklist + *"Relevant docs & summary (no raw data)"*.
+   - Action buttons: `Allow & Schedule` (calendar icon), `Not now`.
+5. **Step 5 — Meeting Scheduled**:
+   - Mascot with glowing checkmark: *"All set! The meeting has been scheduled."*
+   - Confirmed meeting card + Google Meet link.
+   - Note: *"You'll get a calendar invite shortly, and I'll be here when the meeting starts. Good luck!"*
+6. **Step 6 — In Your Calendar**:
+   - In-app Calendar view highlighting the scheduled slot at 11:00 AM.
+   - Floating Blue mascot: *"Ready for the meeting? I'm here if you need anything else!"*
+- **Alternative / Fallback Branch (When Senior is Busy — `10.41.28 PM.jpeg`)**:
+  - 1. Proposes senior's next available slot (e.g., Tomorrow 10:00 AM) or alternative option.
+  - 2. Scans junior team availability (Arjun Mehta - Free, Neha Kapoor - Busy, Rohan Das - Free, Sneha Iyer - Free).
+  - 3. If time is critical, suggests alternative: *"You can send your work summary on Teams or Slack to your manager for a quick review."*
+  - 4. Blue drafts a concise message with key points, seeks permission, sends to manager, and confirms with a tracking checklist.
+
+#### C. Permission Request & Policy Gate Flow (`WhatsApp Image 2026-10-12 at 7.39.34 PM.jpeg` & `7.39.35 PM.jpeg`)
+1. **Screen 1 — Permission Request with Task Summary**:
+   - Mascot with speech bubble: *"Here's what I'll do, Alex! I've grouped the tasks and actions based on your priorities and context. Please review and give me permission to proceed."*
+   - Task Summary:
+     - `1 High Priority` (2 tasks) — Finalize design mockups (15m), Update documentation (30m)
+     - `2 Next Up` (2 tasks) — Build API integration (2h), Prepare sprint demo (1h)
+     - `3 Needs Senior Help` (1 task) — Resolve production bug (1h)
+   - Connector Status: Gmail (read + summarize ✓), Slack (summarize ✓), Calendar (propose slots ✓).
+   - Audio Bar: `"Tap to hear Blue's summary →"`
+   - Buttons: `Abort` (left pill), `✓ Allow` (right blue pill).
+2. **Screen 2 — Redo Confirmation Pop-up**:
+   - Centered modal over dimmed backdrop with questioning mascot.
+   - Title: `"Would you like to redo?"`
+   - Subtitle: *"I can go back and make changes, or we can move forward with this plan."*
+   - Buttons: `↻ Yes, redo (Go back to edit the plan) →` (blue) | `✕ No, continue (Move to the next step) →` (white).
+3. **Screen 3 — Task Aborted Screen**:
+   - Relieved mascot with red `✕` bubble: `"Task aborted ✨"`
+   - Subtitle: *"No worries! I won't take any action. I'll ask for your permission for the next one."*
+   - Shield card: `"Your control matters: You're always in charge. I'll wait for your permission before doing anything else."*
+   - Button: `Back to Dashboard` (blue).
+
+#### D. Private Wellbeing Check-in (`WhatsApp Image 2026-10-12 at 7.46.30 PM.jpeg`)
+- Mascot floating with heart bubble in a peaceful setting.
+- Title: `"Hey Alex! 👋"` — *"Just checking in on you. How are you feeling today?"*
+- Emotion selector cards (interactive):
+  - 😄 `"Great"`
+  - 😐 `"Okay"`
+  - 😕 `"A bit tired"`
+  - ☹️ `"Stressed"`
+- Reassurance note: *"No pressure! Just a quick check-in. Your well-being matters. 💙"*
+- Support prompts: `"✨ Motivation"`, `"☕ Break suggestion"`, `"💬 Just chat"`.
+- Private message input: *"Type a message or choose an option..."*
+
+#### E. Task Completion Celebration (`WhatsApp Image 2026-10-12 at 7.46.30 PM.jpeg`)
+- Floating celebratory mascot with checkmark badge and star confetti.
+- Title: `"Task Completed! 🎉"` — *"You did it, Alex! Here's what you accomplished:"*
+- Completed task badge + Project tag + timestamp.
+- Encouragement box: *"That's a big step forward! 💙 Your focus and effort are making a real difference. Keep going!"*
+- Small celebration quote card: `★ "Progress, not perfection, builds amazing things."`
+- Buttons: `"→ View next task"` (blue) | `"Maybe later"` (white).
+
+#### F. Morning Roundup Kickoff (`WhatsApp Image 2026-10-12 at 7.46.30 PM.jpeg`)
+- Peaceful stretching mascot with sunrise aura: badge `"You're all set for the day!"`.
+- Title: `"Good morning, Alex! ☀️"` — *"A fresh day brings new opportunities. Let's get you ready for a productive and fulfilling day!"*
+- Value pillars:
+  - 🟢 `Keep you on track` (Gentle reminders and smart prioritization of your tasks.)
+  - 🟣 `Reduce stress` (Break big tasks into smaller steps and offer support when you need it.)
+  - 🔵 `Save you time` (Summarize updates, find what matters, and eliminate busy work.)
+  - 🔴 `Boost your focus` (Encourage healthy breaks and celebrate your progress.)
+- Footer: *"A calm mind, a clear plan, and a little support go a long way. 💙"*
+- CTA Button: `"▶ Let's make it a great day!"`
 
 ---
 
