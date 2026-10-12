@@ -1,112 +1,101 @@
-import React from 'react';
+export type MascotMood =
+  | 'happy'
+  | 'thinking'
+  | 'excited'
+  | 'sleep'
+  | 'working'
+  | 'encouraging'
+  | 'wink'
+  | 'calm';
 
 interface BlueMascotProps {
-  size?: number;
-  mood?: 'happy' | 'wink' | 'calm';
+  size?: number; // rendered width in px
+  mood?: MascotMood;
   className?: string;
+  float?: boolean;
 }
 
-export default function BlueMascot({ size = 56, mood = 'happy', className = '' }: BlueMascotProps) {
-  const s = size;
-  const cx = s / 2;
-  const cy = s / 2;
+const ASPECT = 543 / 640;
 
-  // Wink: right eye is a curve instead of an oval
-  const rightEye = mood === 'wink' ? (
-    <path
-      d={`M ${cx + 7} ${cy - 3} Q ${cx + 10} ${cy - 7} ${cx + 13} ${cy - 3}`}
-      stroke="#1B2547"
-      strokeWidth="2"
-      fill="none"
-      strokeLinecap="round"
-    />
-  ) : (
-    <ellipse cx={cx + 10} cy={cy - 4} rx="3.5" ry={mood === 'calm' ? 2 : 4} fill="#1B2547" />
-  );
-
-  const moodColor = mood === 'happy' ? '#3B6CF6' : mood === 'calm' ? '#6FA0FF' : '#3B6CF6';
-
+function Sparkle({ x, y, s = 10, delay = 0 }: { x: string; y: string; s?: number; delay?: number }) {
   return (
     <svg
-      width={s}
-      height={s}
-      viewBox={`0 0 ${s} ${s}`}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      role="img"
-      aria-label="Blue mascot"
+      aria-hidden="true"
+      className="absolute animate-twinkle"
+      style={{ left: x, top: y, width: s, height: s, animationDelay: `${delay}s` }}
+      viewBox="0 0 24 24"
     >
-      <defs>
-        <linearGradient id={`bg-${size}-${mood}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6FA0FF" />
-          <stop offset="100%" stopColor={moodColor} />
-        </linearGradient>
-      </defs>
-
-      {/* Leaf/antenna on top */}
-      <ellipse
-        cx={cx}
-        cy={cy * 0.22}
-        rx={s * 0.08}
-        ry={s * 0.12}
-        fill="#2BB673"
-        transform={`rotate(-20, ${cx}, ${cy * 0.22})`}
-      />
-      <line
-        x1={cx}
-        y1={cy * 0.35}
-        x2={cx}
-        y2={cy * 0.22}
-        stroke="#2BB673"
-        strokeWidth="1.5"
-      />
-
-      {/* Body blob */}
-      <ellipse
-        cx={cx}
-        cy={cy + s * 0.08}
-        rx={s * 0.4}
-        ry={s * 0.38}
-        fill={`url(#bg-${size}-${mood})`}
-      />
-
-      {/* White face area */}
-      <ellipse
-        cx={cx}
-        cy={cy + s * 0.06}
-        rx={s * 0.28}
-        ry={s * 0.26}
-        fill="white"
-        opacity="0.92"
-      />
-
-      {/* Left eye */}
-      <ellipse cx={cx - 10} cy={cy - 4} rx="3.5" ry={mood === 'calm' ? 2 : 4} fill="#1B2547" />
-
-      {/* Left eye highlight */}
-      <circle cx={cx - 8.5} cy={cy - 6} r="1" fill="white" />
-
-      {/* Right eye */}
-      {rightEye}
-
-      {/* Right eye highlight (when not winking) */}
-      {mood !== 'wink' && <circle cx={cx + 11.5} cy={cy - 6} r="1" fill="white" />}
-
-      {/* Pink cheeks */}
-      <ellipse cx={cx - 14} cy={cy + 4} rx="4" ry="2.5" fill="#FFB3BA" opacity="0.6" />
-      <ellipse cx={cx + 14} cy={cy + 4} rx="4" ry="2.5" fill="#FFB3BA" opacity="0.6" />
-
-      {/* Smile */}
-      {mood !== 'calm' && (
-        <path
-          d={`M ${cx - 7} ${cy + 6} Q ${cx} ${cy + 11} ${cx + 7} ${cy + 6}`}
-          stroke="#1B2547"
-          strokeWidth="1.8"
-          fill="none"
-          strokeLinecap="round"
-        />
-      )}
+      <path d="M12 0l2.7 9.3L24 12l-9.3 2.7L12 24l-2.7-9.3L0 12l9.3-2.7z" fill="#FDE68A" />
     </svg>
+  );
+}
+
+function Badge({ children, size }: { children: React.ReactNode; size: number }) {
+  const d = Math.max(16, Math.round(size * 0.3));
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute -top-1 -right-1 flex items-center justify-center rounded-full bg-white shadow-card text-blue-500 font-bold"
+      style={{ width: d, height: d, fontSize: d * 0.6 }}
+    >
+      {children}
+    </span>
+  );
+}
+
+export default function BlueMascot({ size = 56, mood = 'happy', className = '', float = false }: BlueMascotProps) {
+  const h = Math.round(size * ASPECT);
+  const sleeping = mood === 'sleep';
+  const label = mood === 'wink' || mood === 'calm' ? 'happy' : mood;
+
+  return (
+    <span
+      className={`relative inline-block flex-shrink-0 ${float || mood === 'excited' ? 'animate-float' : ''} ${className}`}
+      style={{ width: size, height: h }}
+      role="img"
+      aria-label={`Blue mascot, ${label}`}
+    >
+      <img
+        src="/blue.png"
+        alt=""
+        draggable={false}
+        width={size}
+        height={h}
+        className="block w-full h-full select-none"
+        style={sleeping ? { filter: 'saturate(0.55) brightness(0.82)' } : undefined}
+      />
+
+      {mood === 'thinking' && <Badge size={size}>?</Badge>}
+      {mood === 'encouraging' && <Badge size={size}>💙</Badge>}
+      {sleeping && (
+        <span
+          aria-hidden="true"
+          className="absolute -top-2 right-0 font-bold text-blue-500 animate-float"
+          style={{ fontSize: Math.max(10, size * 0.2) }}
+        >
+          zZz
+        </span>
+      )}
+      {mood === 'excited' && (
+        <>
+          <Sparkle x="-6%" y="8%" s={Math.max(10, size * 0.16)} />
+          <Sparkle x="92%" y="2%" s={Math.max(8, size * 0.12)} delay={0.4} />
+          <Sparkle x="96%" y="62%" s={Math.max(8, size * 0.14)} delay={0.8} />
+          <Sparkle x="-4%" y="68%" s={Math.max(8, size * 0.1)} delay={1.2} />
+        </>
+      )}
+      {mood === 'working' && (
+        <svg
+          aria-hidden="true"
+          className="absolute left-1/2 -translate-x-1/2"
+          style={{ bottom: -size * 0.04, width: size * 0.5 }}
+          viewBox="0 0 60 36"
+        >
+          <rect x="8" y="2" width="44" height="24" rx="3" fill="#1B2D63" />
+          <rect x="11" y="5" width="38" height="18" rx="2" fill="#6FA0FF" />
+          <rect x="2" y="26" width="56" height="5" rx="2.5" fill="#CBD5F5" />
+        </svg>
+      )}
+    </span>
   );
 }
