@@ -1,5 +1,5 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { encryptJson, decryptJson, EncryptedPayload, resetKeyCache } from './crypto';
+import { encryptJson, decryptJson, EncryptedPayload, destroyKey } from './crypto';
 
 const DB_NAME = 'blue-local-memory';
 const DB_VERSION = 1;
@@ -111,5 +111,5 @@ export async function clearAll(): Promise<void> {
     await tx.objectStore(store).clear();
   }
   await tx.done;
-  resetKeyCache();
+  await destroyKey();
 }

@@ -1,121 +1,79 @@
 import { useState } from 'react';
-import { CheckCircle2, Circle, Plus, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
-
-interface Task {
-  id: string;
-  title: string;
-  project: string;
-  estimateMin: number;
-  group: 'easy_wins' | 'next_up' | 'needs_senior';
-  done: boolean;
-}
-
-const TASKS: Task[] = [
-  { id: 't1', title: 'Review design mockup feedback', project: 'Atlas', estimateMin: 15, group: 'easy_wins', done: false },
-  { id: 't2', title: 'Respond to sprint-demo invite', project: 'Atlas', estimateMin: 5, group: 'easy_wins', done: false },
-  { id: 't3', title: 'Draft API integration spec', project: 'Atlas', estimateMin: 60, group: 'next_up', done: false },
-  { id: 't4', title: 'Follow up on access request', project: 'Orion Billing', estimateMin: 30, group: 'next_up', done: false },
-  { id: 't5', title: 'Resolve prod-bug #471 (DevOps input needed)', project: 'Atlas', estimateMin: 120, group: 'needs_senior', done: false },
-  { id: 't6', title: 'Clarify "make it faster" requirement', project: 'Atlas', estimateMin: 30, group: 'needs_senior', done: false },
-];
-
-const groupConfig = {
-  easy_wins:    { label: 'Easy wins',         color: 'bg-green-100 text-green-700', icon: '🟢' },
-  next_up:      { label: 'Next up',           color: 'bg-blue-100 text-blue-700',  icon: '🔵' },
-  needs_senior: { label: 'Needs senior help', color: 'bg-amber-100 text-amber-700', icon: '🟡' },
-};
+import { Plus, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { useBlueStore } from '../store';
+import { useUi } from '../ui';
+import TaskRow from '../components/TaskRow';
+import { Card, EmptyState, GROUP_META, GROUP_ORDER } from '../components/ui';
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState(TASKS);
-  const [newTitle, setNewTitle] = useState('');
+  const tasks = useBlueStore((s) => s.tasks);
+  const addTask = useBlueStore((s) => s.addTask);
+  const removeTask = useBlueStore((s) => s.removeTask);
+  const allowConnectors = useBlueStore((s) => s.settings.allowConnectors);
+  const openDialog = useUi((s) => s.openDialog);
+  const [title, setTitle] = useState('');
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [showDone, setShowDone] = useState(false);
 
-  const toggle = (id: string) =>
-    setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const open = tasks.filter((t) => t.status === 'todo');
+  const done = tasks.filter((t) => t.status === 'done');
 
-  const addTask = () => {
-    if (!newTitle.trim()) return;
-    setTasks(ts => [...ts, {
-      id: Date.now().toString(), title: newTitle.trim(),
-      project: 'Manual', estimateMin: 30, group: 'next_up', done: false
-    }]);
-    setNewTitle('');
+  const add = async () => {
+    const t = title.trim();
+    if (!t) return;
+    await addTask({
+      title: t, project: 'General', estimateMin: 30, effort: 'medium', group: 'next_up', urgency: 'med', status: 'todo',
+      explanation: { sourceCategory: 'manual', confidence: 1, reason: 'You added this task yourself.' },
+      provenance: { source: 'manual', ref: 'user' },
+    });
+    setTitle('');
   };
 
-  const toggleGroup = (g: string) =>
-    setCollapsed(c => ({ ...c, [g]: !c[g] }));
-
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-ink">Tasks</h1>
-        <span className="text-muted text-sm">{tasks.filter(t => !t.done).length} remaining</span>
+    <div className="mx-auto max-w-3xl p-4 sm:p-8">
+      <div className="mb-5 flex items-center justify-between">
+        <div><h1 className="text-2xl font-bold text-ink">Tasks</h1><p className="text-sm text-muted">{open.length} remaining · {done.length} done</p></div>
+        <button onClick={() => openDialog('roundup')} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"><Sparkles size={15} /> Sort my day</button>
       </div>
 
-      {/* Add task */}
-      <div className="flex gap-3 mb-6">
-        <input
-          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-ink
-                     focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                     placeholder:text-muted"
-          placeholder="Add a task…"
-          value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') addTask(); }}
-          aria-label="New task title"
-        />
-        <button onClick={addTask} className="btn-primary flex items-center gap-1.5" aria-label="Add task">
-          <Plus size={16} />
-          Add
-        </button>
-      </div>
+      <form onSubmit={(e) => { e.preventDefault(); add(); }} className="mb-6 flex gap-3">
+        <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Add a task" placeholder="Add a task…" className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-muted focus:border-blue-500" />
+        <button type="submit" disabled={!title.trim()} className="btn-primary inline-flex items-center gap-2 disabled:opacity-40"><Plus size={16} /> Add task</button>
+      </form>
 
-      {/* Groups */}
-      {(['easy_wins', 'next_up', 'needs_senior'] as const).map(group => {
-        const cfg = groupConfig[group];
-        const groupTasks = tasks.filter(t => t.group === group);
-        if (!groupTasks.length) return null;
-        const isCollapsed = collapsed[group];
+      {tasks.length === 0 && (
+        <Card><EmptyState title="Nothing here yet" hint={allowConnectors ? 'Open your roundup and I will sort your day.' : 'Connect the Demo Workspace in Settings, or add a task above.'} /></Card>
+      )}
 
+      {GROUP_ORDER.map((g) => {
+        const items = open.filter((t) => t.group === g);
+        if (!items.length) return null;
         return (
-          <div key={group} className="card mb-4 overflow-hidden">
-            <button
-              onClick={() => toggleGroup(group)}
-              className="w-full flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors"
-              aria-expanded={!isCollapsed}
-            >
-              <div className="flex items-center gap-2">
-                <span>{cfg.icon}</span>
-                <span className={`pill ${cfg.color}`}>{cfg.label}</span>
-                <span className="text-xs text-muted">({groupTasks.length})</span>
-              </div>
-              {isCollapsed ? <ChevronDown size={16} className="text-muted" /> : <ChevronUp size={16} className="text-muted" />}
+          <Card key={g} className="mb-4 p-4">
+            <button onClick={() => setCollapsed({ ...collapsed, [g]: !collapsed[g] })} aria-expanded={!collapsed[g]} className="flex w-full items-center justify-between">
+              <span className="flex items-center gap-2 font-semibold text-ink"><span className={`h-2.5 w-2.5 rounded-full ${GROUP_META[g].dot}`} />{GROUP_META[g].label}<span className="text-xs font-normal text-muted">({items.length})</span></span>
+              {collapsed[g] ? <ChevronDown size={16} className="text-muted" /> : <ChevronUp size={16} className="text-muted" />}
             </button>
-
-            {!isCollapsed && (
-              <div className="px-5 pb-3 space-y-1 border-t border-slate-50">
-                {groupTasks.map(task => (
-                  <div key={task.id}
-                       className="flex items-center gap-3 py-2 hover:bg-slate-50 rounded-lg px-2 group">
-                    <button onClick={() => toggle(task.id)}
-                            className="flex-shrink-0 text-slate-300 hover:text-good transition-colors"
-                            aria-label={task.done ? 'Mark undone' : 'Mark done'}>
-                      {task.done ? <CheckCircle2 size={18} className="text-good" /> : <Circle size={18} />}
-                    </button>
-                    <span className={`flex-1 text-sm ${task.done ? 'line-through text-muted' : 'text-ink'}`}>
-                      {task.title}
-                      <span className="text-muted text-xs ml-1">({task.project})</span>
-                    </span>
-                    <span className="pill bg-slate-100 text-muted text-xs">
-                      {task.estimateMin < 60 ? `${task.estimateMin}m` : `${task.estimateMin/60}h`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            {!collapsed[g] && <ul className="mt-2">{items.map((t) => <TaskRow key={t.id} task={t} />)}</ul>}
+          </Card>
         );
       })}
+
+      {done.length > 0 && (
+        <Card className="p-4">
+          <button onClick={() => setShowDone(!showDone)} aria-expanded={showDone} className="flex w-full items-center justify-between font-semibold text-ink">Completed ({done.length}){showDone ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
+          {showDone && (
+            <ul className="mt-2">
+              {done.map((t) => (
+                <div key={t.id} className="flex items-center">
+                  <div className="flex-1"><TaskRow task={t} showBadge={false} compact /></div>
+                  <button onClick={() => removeTask(t.id)} className="ml-2 text-xs text-muted hover:text-rose-500" aria-label={`Delete ${t.title}`}>Delete</button>
+                </div>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

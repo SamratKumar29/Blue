@@ -1,70 +1,39 @@
-const TEAM = [
-  {
-    id: 'p1', name: 'Marcus Thompson', role: 'Tech Lead', initials: 'MT', color: 'bg-blue-500',
-    expertise: ['Architecture', 'APIs', 'System design'],
-    timezone: 'UTC+5:30'
-  },
-  {
-    id: 'p2', name: 'Amir Hassan', role: 'DevOps Engineer', initials: 'AH', color: 'bg-green-500',
-    expertise: ['Prod incidents', 'Deployments', 'Cloud infra'],
-    timezone: 'UTC+5:30'
-  },
-  {
-    id: 'p3', name: 'Priya Kapoor', role: 'Designer', initials: 'PK', color: 'bg-purple-500',
-    expertise: ['UI/UX', 'Figma', 'Design systems'],
-    timezone: 'UTC+5:30'
-  },
-  {
-    id: 'p4', name: 'Rohan Mehta', role: 'Product Manager', initials: 'RM', color: 'bg-amber-500',
-    expertise: ['Product strategy', 'User research', 'Agile'],
-    timezone: 'UTC+5:30'
-  },
-  {
-    id: 'p5', name: 'Li Wei', role: 'Backend Engineer', initials: 'LW', color: 'bg-red-500',
-    expertise: ['Node.js', 'Databases', 'Performance'],
-    timezone: 'UTC+8'
-  },
-  {
-    id: 'p6', name: 'Sofia Andrade', role: 'Frontend Engineer', initials: 'SA', color: 'bg-pink-500',
-    expertise: ['React', 'TypeScript', 'Accessibility'],
-    timezone: 'UTC+5:30'
-  },
-];
+import { LifeBuoy, UserX } from 'lucide-react';
+import { useUi } from '../ui';
+import { useBlueStore } from '../store';
+import { TEAM } from '../core/features/askSenior';
+import { Card } from '../components/ui';
+
+const STATUS = { on_track: ['On track', 'bg-emerald-50 text-emerald-600'], in_progress: ['In progress', 'bg-amber-50 text-amber-600'], needs_help: ['Needs help', 'bg-rose-50 text-rose-500'], at_capacity: ['At capacity', 'bg-rose-50 text-rose-500'] } as const;
 
 export default function Team() {
+  const openDialog = useUi((s) => s.openDialog);
+  const showStatus = useBlueStore((s) => s.settings.allowTeamContext);
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold text-ink mb-2">Team</h1>
-      <p className="text-muted text-sm mb-6">
-        Blue can suggest team members for your tasks based on their expertise — only if you enable team context.
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {TEAM.map(person => (
-          <div key={person.id} className="card p-5 hover:shadow-md transition-shadow">
-            <div className="flex items-start gap-3 mb-3">
-              <div className={`w-11 h-11 rounded-full ${person.color} flex items-center justify-center text-white font-bold flex-shrink-0`}>
-                {person.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-ink text-sm">{person.name}</p>
-                <p className="text-muted text-xs">{person.role}</p>
-                <p className="text-muted text-xs">{person.timezone}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-1 mb-3">
-              {person.expertise.map(e => (
-                <span key={e} className="pill bg-slate-100 text-muted text-[10px]">{e}</span>
-              ))}
-            </div>
-
-            <button className="w-full btn-ghost text-blue-500 border border-blue-200 hover:bg-blue-50 text-sm py-1.5">
-              Ask a senior
-            </button>
-          </div>
-        ))}
+    <div className="mx-auto max-w-5xl p-4 sm:p-8">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div><h1 className="text-2xl font-bold text-ink">Team</h1><p className="text-sm text-muted">Asking for help early is a sign of strength.</p></div>
+        <button onClick={() => openDialog('capacity')} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"><UserX size={15} /> A teammate said no</button>
       </div>
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {TEAM.map((m) => {
+          const s = STATUS[m.status ?? 'on_track'];
+          return (
+            <li key={m.id}>
+              <Card className="flex h-full flex-col p-5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{m.name.split(' ').map((p) => p[0]).join('')}</span>
+                  <div className="min-w-0"><p className="font-semibold text-ink">{m.name}</p><p className="text-xs text-muted">{m.role}</p>
+                    {showStatus && <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${s[1]}`}>{s[0]} · self-declared</span>}</div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">{m.expertise.map((e) => <span key={e} className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-ink">{e}</span>)}</div>
+                <button onClick={() => openDialog('askSenior', { helperId: m.id })} className="btn-primary mt-4 inline-flex items-center justify-center gap-2 text-xs"><LifeBuoy size={14} /> Ask {m.name.split(' ')[0]} for help</button>
+              </Card>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-6 text-xs text-muted">No manager view, no scores. Availability appears only if teammates choose to share it.</p>
     </div>
   );
 }
