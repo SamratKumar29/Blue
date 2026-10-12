@@ -1,44 +1,40 @@
-import { Clock, Users } from 'lucide-react';
+import calendar from '../data/calendar.json';
+import { Calendar as CalIcon, Users } from 'lucide-react';
+import { useBlueStore } from '../store';
+import { Card, EmptyState } from '../components/ui';
 
-const EVENTS = [
-  { id: 'e1', title: 'Design Sync', time: '11:00 – 11:30', attendees: ['Alex', 'Priya', 'Rohan'], color: 'bg-blue-500' },
-  { id: 'e2', title: 'Sprint Demo Review', time: '15:00 – 15:30', attendees: ['Alex', 'Team'], color: 'bg-purple-500' },
-  { id: 'e3', title: '1:1 with Marcus', time: '16:00 – 16:20', attendees: ['Alex', 'Marcus'], color: 'bg-green-500' },
-  { id: 'e4', title: 'Orion Billing standup', time: '17:00 – 17:15', attendees: ['Alex', 'Orion Team'], color: 'bg-amber-500' },
-];
-
-const now = new Date();
-const label = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 export default function Calendar() {
+  const allow = useBlueStore((s) => s.settings.allowConnectors && s.meta.sources['demo-calendar']);
+  const outbox = useBlueStore((s) => s.outbox).filter((o) => o.kind === 'event' && o.when);
+  const events = [
+    ...(allow ? calendar.map((e) => ({ id: e.id, title: e.title, start: e.start, end: e.end, who: e.attendees.join(', '), scheduled: false })) : []),
+    ...outbox.map((o) => ({ id: o.id, title: o.content.split('\n')[0].replace('Meeting: ', ''), start: o.when!, end: o.when!, who: o.recipient, scheduled: true })),
+  ].sort((a, b) => a.start.localeCompare(b.start));
+
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold text-ink mb-1">Calendar</h1>
-      <p className="text-muted text-sm mb-6">{label}</p>
-
-      <div className="space-y-3">
-        {EVENTS.map(ev => (
-          <div key={ev.id} className="card px-5 py-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className={`w-1 h-12 rounded-full ${ev.color} flex-shrink-0`} />
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-ink text-sm">{ev.title}</p>
-              <p className="flex items-center gap-1 text-xs text-muted mt-0.5">
-                <Clock size={11} />
-                {ev.time}
-              </p>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-muted">
-              <Users size={12} />
-              {ev.attendees.length}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 card p-4 text-center text-muted text-sm">
-        <p>📅 Calendar is read-only. Blue reads events to help with your roundup.</p>
-        <p className="text-xs mt-1">Real Google Calendar sync is a roadmap feature.</p>
-      </div>
+    <div className="mx-auto max-w-3xl p-4 sm:p-8">
+      <h1 className="text-2xl font-bold text-ink">Calendar</h1>
+      <p className="mb-5 text-sm text-muted">Read-only demo events, plus meetings you approved through Blue.</p>
+      {events.length === 0 ? (
+        <Card><EmptyState title="Nothing here yet" hint="Connect the Demo Workspace in Settings, or schedule a meeting from Ask a senior." /></Card>
+      ) : (
+        <ul className="space-y-3">
+          {events.map((e) => (
+            <li key={e.id}>
+              <Card className={`flex items-center gap-4 p-4 ${e.scheduled ? 'ring-2 ring-blue-200' : ''}`}>
+                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><CalIcon size={20} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-ink">{e.title}{e.scheduled && <span className="ml-2 rounded-full bg-blue-500 px-2 py-0.5 text-[10px] font-semibold text-white">Scheduled by Blue (demo)</span>}</p>
+                  <p className="flex items-center gap-1.5 truncate text-xs text-muted"><Users size={12} /> {e.who}</p>
+                </div>
+                <div className="text-right text-sm text-ink"><p>{new Date(e.start).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p><p className="text-xs text-muted">{time(e.start)}{e.end !== e.start ? ` – ${time(e.end)}` : ''}</p></div>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ const DB_NAME = 'blue-crypto-meta';
 const STORE_NAME = 'keys';
 const KEY_NAME = 'aes-gcm-master-key';
 
-let cachedKey: CryptoKey | null = null;
+let keyPromise: Promise<CryptoKey> | null = null;
 
 async function getMetaDb(): Promise<IDBPDatabase> {
   return openDB(DB_NAME, 1, {
@@ -16,38 +16,43 @@ async function getMetaDb(): Promise<IDBPDatabase> {
   });
 }
 
-/**
- * Retrieve or generate the non-extractable AES-GCM 256 CryptoKey.
- * Stored in IndexedDB as a non-extractable CryptoKey object.
- */
-export async function getKey(): Promise<CryptoKey> {
-  if (cachedKey) return cachedKey;
-
+async function loadOrCreateKey(): Promise<CryptoKey> {
   const db = await getMetaDb();
-  const existing = await db.get(STORE_NAME, KEY_NAME);
-
-  if (existing && existing instanceof CryptoKey) {
-    cachedKey = existing;
-    return cachedKey;
+  try {
+    const existing = await db.get(STORE_NAME, KEY_NAME);
+    if (existing instanceof CryptoKey) return existing;
+    const created = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    await db.put(STORE_NAME, created, KEY_NAME);
+    return created;
+  } finally {
+    db.close();
   }
+}
 
-  // Generate non-extractable AES-GCM 256-bit key
-  const newKey = await crypto.subtle.generateKey(
-    {
-      name: 'AES-GCM',
-      length: 256,
-    },
-    false, // non-extractable
-    ['encrypt', 'decrypt']
-  );
-
-  await db.put(STORE_NAME, newKey, KEY_NAME);
-  cachedKey = newKey;
-  return newKey;
+/** Retrieve or generate the non-extractable AES-GCM 256 key (single-flight, race-free). */
+export function getKey(): Promise<CryptoKey> {
+  if (!keyPromise) {
+    keyPromise = loadOrCreateKey().catch((e) => {
+      keyPromise = null;
+      throw e;
+    });
+  }
+  return keyPromise;
 }
 
 export function resetKeyCache(): void {
-  cachedKey = null;
+  keyPromise = null;
+}
+
+/** Permanently delete the stored key so previously encrypted data becomes unreadable. */
+export async function destroyKey(): Promise<void> {
+  keyPromise = null;
+  const db = await getMetaDb();
+  try {
+    await db.delete(STORE_NAME, KEY_NAME);
+  } finally {
+    db.close();
+  }
 }
 
 function bufferToBase64(buffer: ArrayBuffer): string {

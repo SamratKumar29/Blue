@@ -1,59 +1,33 @@
-import { CheckCircle, Clock, XCircle } from 'lucide-react';
-
-const CONNECTORS = [
-  {
-    id: 'c1', name: 'Demo Workspace', description: 'Sample Slack-like, Gmail-like, and Calendar data',
-    status: 'available', icon: '🔵'
-  },
-  {
-    id: 'c2', name: 'Slack', description: 'Real-time team messaging', status: 'roadmap', icon: '💬'
-  },
-  {
-    id: 'c3', name: 'Gmail', description: 'Work email access (read-only)', status: 'roadmap', icon: '📧'
-  },
-  {
-    id: 'c4', name: 'Google Calendar', description: 'Calendar events and scheduling', status: 'roadmap', icon: '📅'
-  },
-];
-
-const statusUI = {
-  available: { label: 'Available', icon: <CheckCircle size={14} />, className: 'bg-green-100 text-green-700' },
-  roadmap:   { label: 'Roadmap',   icon: <Clock size={14} />,       className: 'bg-slate-100 text-muted' },
-  denied:    { label: 'Denied',    icon: <XCircle size={14} />,     className: 'bg-red-100 text-red-700' },
-};
+import { Hash, Mail, Calendar as CalIcon, Boxes } from 'lucide-react';
+import { useBlueStore } from '../store';
+import { useUi } from '../ui';
+import { Card } from '../components/ui';
 
 export default function Apps() {
+  const on = useBlueStore((s) => s.settings.allowConnectors);
+  const openSettings = useUi((s) => s.openSettings);
+  const apps = [
+    { name: 'Demo Workspace', desc: 'Fictional Slack-like, Gmail-like and Calendar data. Read-only.', icon: Boxes, status: on ? 'Connected' : 'Available', cls: on ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600', action: true },
+    { name: 'Slack', desc: 'Real workspace messages via Slack OAuth.', icon: Hash, status: 'Roadmap', cls: 'bg-slate-100 text-muted' },
+    { name: 'Gmail', desc: 'Real mail via the Gmail API, read-only scopes.', icon: Mail, status: 'Roadmap', cls: 'bg-slate-100 text-muted' },
+    { name: 'Google Calendar', desc: 'Real events via Calendar API (calendar.readonly).', icon: CalIcon, status: 'Roadmap', cls: 'bg-slate-100 text-muted' },
+  ];
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold text-ink mb-2">Connectors & Apps</h1>
-      <p className="text-muted text-sm mb-6">
-        Blue accesses only what you explicitly enable. Codebase and secret access is always off.
-      </p>
-
-      <div className="space-y-3">
-        {CONNECTORS.map(conn => {
-          const ui = statusUI[conn.status as keyof typeof statusUI];
-          return (
-            <div key={conn.id} className="card px-5 py-4 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <span className="text-2xl">{conn.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-ink text-sm">{conn.name}</p>
-                <p className="text-xs text-muted mt-0.5">{conn.description}</p>
-              </div>
-              <span className={`pill flex items-center gap-1 ${ui.className}`}>
-                {ui.icon}
-                {ui.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-4 card p-4 bg-slate-50">
-        <p className="text-xs text-muted text-center">
-          🔒 Codebase access: never &nbsp;·&nbsp; Blue-to-Blue: disabled &nbsp;·&nbsp; Write actions: off by default
-        </p>
-      </div>
+    <div className="mx-auto max-w-4xl p-4 sm:p-8">
+      <h1 className="text-2xl font-bold text-ink">Apps</h1>
+      <p className="mb-5 text-sm text-muted">Connectors are off until you switch them on, and always read-only.</p>
+      <ul className="grid gap-4 sm:grid-cols-2">
+        {apps.map(({ name, desc, icon: Icon, status, cls, action }) => (
+          <li key={name}>
+            <Card className="flex h-full items-start gap-4 p-5">
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><Icon size={22} /></span>
+              <div className="flex-1"><p className="font-semibold text-ink">{name}</p><p className="mt-0.5 text-xs text-muted">{desc}</p>
+                {action && <button onClick={() => openSettings('connectors')} className="mt-3 text-xs font-semibold text-blue-600 hover:underline">Manage</button>}</div>
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>{status}</span>
+            </Card>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

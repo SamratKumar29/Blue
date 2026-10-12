@@ -29,6 +29,7 @@ export interface Task {
   provenance?: Provenance;
   createdAt: string;
   completedAt?: string;
+  userAdjusted?: boolean; // the user moved this task between groups
 }
 
 export interface Settings {
@@ -65,6 +66,8 @@ export interface OutboxItem {
   recipient: string;
   content: string;
   approvedHash: string;
+  kind?: 'message' | 'event';
+  when?: string; // ISO start, for events
 }
 
 export interface Summary {
@@ -105,4 +108,6 @@ export interface TeamMember {
   role: string;
   expertise: string[];
   timezone: string;
+  /** Self-declared by the teammate and shared by choice. Never inferred. */
+  status?: 'on_track' | 'in_progress' | 'needs_help' | 'at_capacity';
 }

@@ -1,263 +1,212 @@
-import { useEffect, useState } from 'react';
-import { Bell, ChevronRight, CheckCircle2, Circle, Zap, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, HelpCircle, Search, Sparkles, ListChecks, Users, MessageSquare, FileText, PenLine, LifeBuoy, PlusSquare, MoreHorizontal, Plus, ChevronRight, Mail, Calendar as CalIcon, Hash } from 'lucide-react';
+import { useBlueStore } from '../store';
+import { useUi } from '../ui';
+import TaskRow from '../components/TaskRow';
 import BlueMascot from '../components/BlueMascot';
+import { Card, CardHeader, EmptyState, GROUP_ORDER, Skeleton, greeting } from '../components/ui';
+import { useWorkspaceSummary } from '../core/connectors/useWorkspace';
+import { now } from '../core/presence/demoClock';
+import { TEAM } from '../core/features/askSenior';
+import { retrieve } from '../core/features/retrieval';
 
-interface Task {
-  id: string;
-  title: string;
-  project: string;
-  estimateMin: number;
-  group: 'easy_wins' | 'next_up' | 'needs_senior';
-  done: boolean;
-}
+const STATUS = {
+  on_track: ['On track', 'text-emerald-600'],
+  in_progress: ['In progress', 'text-amber-600'],
+  needs_help: ['Needs help', 'text-rose-500'],
+  at_capacity: ['At capacity', 'text-rose-500'],
+} as const;
 
-interface TeamUpdate {
-  id: string;
-  source: 'slack' | 'gmail' | 'calendar';
-  text: string;
-  time: string;
-}
+function initials(n: string) { return n.split(' ').map((p) => p[0]).slice(0, 2).join(''); }
 
-const SAMPLE_TASKS: Task[] = [
-  { id: 't1', title: 'Review design mockup feedback', project: 'Atlas', estimateMin: 15, group: 'easy_wins', done: false },
-  { id: 't2', title: 'Respond to sprint-demo invite', project: 'Atlas', estimateMin: 5, group: 'easy_wins', done: false },
-  { id: 't3', title: 'Draft API integration spec', project: 'Atlas', estimateMin: 60, group: 'next_up', done: false },
-  { id: 't4', title: 'Follow up on access request', project: 'Orion Billing', estimateMin: 30, group: 'next_up', done: false },
-  { id: 't5', title: 'Resolve prod-bug #471 (DevOps input needed)', project: 'Atlas', estimateMin: 120, group: 'needs_senior', done: false },
-  { id: 't6', title: 'Clarify "make it faster" requirement', project: 'Atlas', estimateMin: 30, group: 'needs_senior', done: false },
-];
+function SearchBox() {
+  const [q, setQ] = useState('');
+  const tasks = useBlueStore((s) => s.tasks);
+  const nav = useNavigate();
+  const openDialog = useUi((s) => s.openDialog);
+  const results = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (s.length < 2) return [];
+    return [
+      ...tasks.filter((t) => t.title.toLowerCase().includes(s)).slice(0, 3).map((t) => ({ label: t.title, kind: 'Task', go: () => openDialog('analysis', { taskId: t.id }) })),
+      ...TEAM.filter((m) => `${m.name} ${m.role} ${m.expertise.join(' ')}`.toLowerCase().includes(s)).slice(0, 3).map((m) => ({ label: `${m.name} · ${m.role}`, kind: 'Team', go: () => nav('/team') })),
+      ...retrieve(s, 2).map((h) => ({ label: h.doc.replace(/[-_]/g, ' '), kind: 'Doc', go: () => nav('/files') })),
+    ];
+  }, [q, tasks, nav, openDialog]);
 
-const TEAM_UPDATES: TeamUpdate[] = [
-  { id: 'u1', source: 'slack', text: 'Priya: design review feedback added in Figma', time: '10m ago' },
-  { id: 'u2', source: 'gmail', text: 'Sprint demo confirmed — Thu 3pm', time: '45m ago' },
-  { id: 'u3', source: 'calendar', text: 'Design sync at 11:00 today', time: '1h ago' },
-];
-
-function getTimeGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'morning';
-  if (h < 17) return 'afternoon';
-  return 'evening';
-}
-
-const groupConfig = {
-  easy_wins: { label: 'Easy wins', color: 'bg-good', textColor: 'text-green-700', dot: 'bg-good' },
-  next_up:   { label: 'Next up',   color: 'bg-blue-500', textColor: 'text-blue-700', dot: 'bg-blue-500' },
-  needs_senior: { label: 'Needs senior help', color: 'bg-warn', textColor: 'text-amber-700', dot: 'bg-warn' },
-};
-
-function formatEst(min: number) {
-  if (min < 60) return `${min}m`;
-  return `${min / 60}h`;
+  return (
+    <div className="relative w-full max-w-md">
+      <Search size={16} className="absolute left-4 top-3 text-muted" aria-hidden="true" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search anything" placeholder="Search anything..." className="w-full rounded-full border border-white/60 bg-white/80 py-2.5 pl-10 pr-4 text-sm shadow-sm backdrop-blur placeholder:text-muted focus:border-blue-500" />
+      {results.length > 0 && (
+        <ul role="listbox" className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
+          {results.map((r, i) => (
+            <li key={i}><button role="option" aria-selected="false" onClick={() => { r.go(); setQ(''); }} className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-blue-50"><span className="truncate">{r.label}</span><span className="ml-3 text-xs text-muted">{r.kind}</span></button></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export default function Home() {
-  const [tasks, setTasks] = useState(SAMPLE_TASKS);
-  const [showRoundup, setShowRoundup] = useState(false);
+  const { settings, tasks, outbox } = useBlueStore();
+  const { openDialog, openSettings, roundupOffered, reminder, setReminder, presence, setRestOverride, restOverride } = useUi();
+  const nav = useNavigate();
+  const { data: ws, loading } = useWorkspaceSummary();
+  const [bell, setBell] = useState(false);
 
-  const done = tasks.filter(t => t.done).length;
-  const groups = (['easy_wins', 'next_up', 'needs_senior'] as const);
+  const open = tasks.filter((t) => t.status === 'todo');
+  const doneToday = tasks.filter((t) => t.completedAt && now().getTime() - new Date(t.completedAt).getTime() < 86_400_000).length;
+  const priorities = [...open].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group)).slice(0, 6);
+  const first = settings.name.split(' ')[0];
+  const resting = (presence === 'sleeping') && !restOverride;
+  const notices = [reminder, roundupOffered ? "Here's your roundup" : null, outbox.length ? `${outbox.length} item(s) in your demo outbox` : null].filter(Boolean) as string[];
 
-  const toggle = (id: string) => {
-    setTasks(ts => ts.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  };
+  if (resting) {
+    return (
+      <div className="bg-sunrise min-h-full p-8">
+        <div className="mx-auto mt-16 max-w-md rounded-3xl bg-white/80 p-8 text-center shadow-card backdrop-blur">
+          <BlueMascot size={150} mood="sleep" float className="mx-auto" />
+          <h1 className="mt-4 text-xl font-bold text-ink">Blue is resting outside your work hours</h1>
+          <p className="mt-1 text-sm text-muted">No reading, no nudges. I wake up 30 minutes before {settings.workStart}.</p>
+          <button onClick={() => setRestOverride(true)} className="btn-primary mt-5">Resume for now</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-0">
-      {/* Hero / Sunrise gradient */}
-      <div
-        className="relative px-8 pt-8 pb-6"
-        style={{ background: 'linear-gradient(135deg, #EEF4FF 0%, #FFF7ED 60%, #FFF 100%)' }}
-      >
-        <div className="flex items-start justify-between">
+    <div>
+      <section className="bg-sunrise px-4 pb-8 pt-5 sm:px-8">
+        <div className="flex items-center justify-between gap-4">
+          <SearchBox />
+          <div className="relative flex items-center gap-2">
+            <button onClick={() => setBell(!bell)} aria-label={`Notifications${notices.length ? ` (${notices.length})` : ''}`} aria-expanded={bell} className="relative rounded-full bg-white/70 p-2.5 text-ink hover:bg-white">
+              <Bell size={18} />{notices.length > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />}
+            </button>
+            <button onClick={() => openSettings('about')} aria-label="Help and about Blue" className="rounded-full bg-white/70 p-2.5 text-ink hover:bg-white"><HelpCircle size={18} /></button>
+            <button onClick={() => openSettings()} aria-label="Open settings" className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">{initials(settings.name)}</button>
+            {bell && (
+              <div role="region" aria-label="Notifications" className="absolute right-0 top-12 z-20 w-72 rounded-2xl border border-slate-100 bg-white p-3 text-sm shadow-xl animate-pop">
+                {notices.length === 0 ? <p className="p-2 text-muted">You're all caught up.</p> : notices.map((n) => (
+                  <button key={n} onClick={() => { if (n === reminder) setReminder(null); if (n.startsWith("Here's")) openDialog('roundup'); if (n.includes('outbox')) nav('/outbox'); setBell(false); }} className="block w-full rounded-lg p-2 text-left hover:bg-blue-50">{n}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="pill bg-green-100 text-good font-semibold">● Active</span>
-            </div>
-            <h1 className="text-2xl font-semibold text-ink">
-              Good {getTimeGreeting()}, Alex!
-            </h1>
-            <p className="text-muted text-sm mt-0.5">Blue here. I've got your roundup for today.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="btn-ghost p-2 rounded-full" aria-label="Notifications">
-              <Bell size={20} />
+            <h1 className="text-2xl font-bold text-ink sm:text-3xl">Good {greeting(now(), settings.timezone)}, {first}! ☀️</h1>
+            <p className="mt-1 text-sm text-muted sm:text-base">Here's your roundup for today. Let's make it count!</p>
+            <button onClick={() => openDialog('roundup')} className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-blue-600 shadow-card hover:bg-blue-50">
+              <Sparkles size={15} /> Your day, simplified {roundupOffered && <span className="h-2 w-2 rounded-full bg-rose-500" aria-label="new" />} <ChevronRight size={15} />
             </button>
-            <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
-              AJ
-            </div>
+          </div>
+          <div className="relative hidden flex-shrink-0 sm:block">
+            <BlueMascot size={190} mood="happy" float />
+            <span className="absolute -top-1 right-0 rounded-2xl bg-white px-3 py-1.5 text-xs font-semibold text-ink shadow-card">Small steps. Big progress! ✨</span>
           </div>
         </div>
+      </section>
 
-        {/* Roundup card */}
-        <div className="mt-4 card p-4 flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
-             onClick={() => setShowRoundup(v => !v)}>
-          <BlueMascot size={48} mood="happy" />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-ink text-sm">Your day, simplified</p>
-            <p className="text-muted text-xs mt-0.5 truncate">
-              {done} done · {tasks.length - done} remaining · Click to see roundup
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-1.5 rounded-full hover:bg-blue-50 text-muted hover:text-blue-500 transition-colors"
-              aria-label="Refresh roundup"
-              onClick={e => { e.stopPropagation(); }}
-            >
-              <RefreshCw size={15} />
-            </button>
-            <ChevronRight size={18} className="text-muted" />
-          </div>
+      {reminder && (
+        <div role="status" className="mx-4 mt-4 flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-2.5 text-sm text-blue-800 sm:mx-8">
+          <span>{reminder}</span><button onClick={() => setReminder(null)} className="text-xs font-semibold hover:underline">Dismiss</button>
         </div>
+      )}
 
-        {showRoundup && (
-          <div className="mt-3 card p-4 text-sm text-ink">
-            <p className="font-semibold mb-2">Today's Roundup</p>
-            <p className="text-muted text-xs mb-2">Based on: Slack, Gmail, Calendar (read-only)</p>
-            <ul className="space-y-1.5">
-              <li>🟢 <strong>Easy wins:</strong> Review design feedback (15m), respond to sprint-demo invite (5m).</li>
-              <li>🔵 <strong>Next up:</strong> Draft API spec for Atlas (1h), follow up on access request (30m).</li>
-              <li>🟡 <strong>Needs senior:</strong> Prod-bug #471 needs DevOps input; "make it faster" requirement is ambiguous — both need senior input before you can proceed.</li>
+      <div className="grid gap-5 px-4 py-6 sm:px-8 lg:grid-cols-2">
+        <Card className="p-5">
+          <CardHeader icon={<ListChecks size={16} />} title="Today's Priorities" action={<button onClick={() => nav('/tasks')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
+          {priorities.length === 0 ? (
+            <EmptyState title="Nothing here yet" hint={settings.allowConnectors ? 'Open your roundup and I will sort your day.' : 'Connect the Demo Workspace in Settings, or add a task yourself.'}
+              action={<button onClick={() => openDialog(settings.allowConnectors ? 'roundup' : 'createTask')} className="btn-primary">{settings.allowConnectors ? 'Open roundup' : 'Create task'}</button>} />
+          ) : <ul>{priorities.map((t) => <TaskRow key={t.id} task={t} />)}</ul>}
+        </Card>
+
+        <Card className="p-5">
+          <CardHeader icon={<Users size={16} />} title="Team Updates" action={<button onClick={() => nav('/apps')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
+          {settings.paused ? (
+            <EmptyState title="Blue is paused" hint="Nothing is being read. Updates return when you resume Blue." />
+          ) : !settings.allowConnectors ? (
+            <EmptyState title="No sources connected" hint="Turn on the Demo Workspace to see Slack, Gmail and Calendar updates here." action={<button onClick={() => openSettings('connectors')} className="btn-primary">Open connectors</button>} />
+          ) : loading || !ws ? (
+            <div className="space-y-3"><Skeleton className="h-12" /><Skeleton className="h-12" /><Skeleton className="h-12" /></div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {ws.slack && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Hash size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Slack</p><p className="text-xs text-muted">{ws.slack.count} new messages</p></div><span className="text-xs text-muted">{ws.slack.time}</span></li>}
+              {ws.gmail && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-500"><Mail size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Gmail</p><p className="text-xs text-muted">{ws.gmail.count} important emails</p></div><span className="text-xs text-muted">{ws.gmail.time}</span></li>}
+              {ws.calendar && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><CalIcon size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Calendar</p><p className="text-xs text-muted">{ws.calendar.title}</p></div><span className="text-xs text-muted">{ws.calendar.time}</span></li>}
+              {!ws.slack && !ws.gmail && !ws.calendar && <li className="py-3 text-sm text-muted">All sources are switched off.</li>}
             </ul>
+          )}
+          <p className="mt-2 text-[11px] text-muted">Read-only counts. Message text is never shown or stored.</p>
+        </Card>
+
+        <Card className="flex items-center bg-card-soft p-5">
+          <div className="flex w-full items-center gap-4">
+            <BlueMascot size={96} mood="encouraging" float />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-blue-600">{doneToday ? 'Great job on your recent tasks!' : 'Ready when you are.'}</p>
+              <p className="mt-1 text-xs text-muted">{doneToday ? `You closed ${doneToday} task${doneToday === 1 ? '' : 's'} recently. That's the Blue way!` : 'Pick one small thing and I will cheer quietly from here.'}</p>
+              <button onClick={() => nav('/tasks')} className="mt-3 rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-blue-600 shadow-sm hover:bg-blue-50">{doneToday ? 'Keep it up! 💙' : 'See my tasks 💙'}</button>
+            </div>
           </div>
-        )}
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="mb-3 font-semibold text-ink">Quick Actions</h2>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              ['Ask Blue', MessageSquare, () => nav('/chat')],
+              ['Summarize', FileText, () => openDialog('summarize')],
+              ['Write', PenLine, () => openDialog('write')],
+              ['Find Help', LifeBuoy, () => openDialog('askSenior')],
+              ['Create Task', PlusSquare, () => openDialog('createTask')],
+              ['More', MoreHorizontal, () => openDialog('moreMenu')],
+            ] as const).map(([label, Icon, fn]) => (
+              <button key={label} onClick={fn} className="flex flex-col items-center gap-2 rounded-2xl p-3 text-xs font-medium text-ink transition hover:bg-blue-50">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-500"><Icon size={20} /></span>{label}
+              </button>
+            ))}
+          </div>
+        </Card>
       </div>
 
-      {/* Main 2-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-        {/* LEFT column */}
-        <div className="space-y-4">
-          {/* Today's Tasks */}
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-ink">Today's Tasks</h2>
-              <span className="text-xs text-muted">{done}/{tasks.length} done</span>
-            </div>
-
-            {groups.map(group => {
-              const cfg = groupConfig[group];
-              const groupTasks = tasks.filter(t => t.group === group);
-              if (!groupTasks.length) return null;
-              return (
-                <div key={group} className="mb-4 last:mb-0">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                    <span className={`text-xs font-medium ${cfg.textColor}`}>{cfg.label}</span>
-                  </div>
-                  <div className="space-y-1">
-                    {groupTasks.map(task => (
-                      <div key={task.id}
-                           className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-50 group">
-                        <button onClick={() => toggle(task.id)}
-                                className="flex-shrink-0 text-slate-300 hover:text-good transition-colors"
-                                aria-label={task.done ? 'Mark undone' : 'Mark done'}>
-                          {task.done
-                            ? <CheckCircle2 size={18} className="text-good" />
-                            : <Circle size={18} />
-                          }
-                        </button>
-                        <span className={`flex-1 text-sm ${task.done ? 'line-through text-muted' : 'text-ink'}`}>
-                          {task.title}
-                          <span className="text-muted"> ({task.project})</span>
-                        </span>
-                        <span className="pill bg-slate-100 text-muted shrink-0">
-                          {formatEst(task.estimateMin)}
-                        </span>
-                        <button className="opacity-0 group-hover:opacity-100 text-muted hover:text-blue-500 text-xs transition-opacity"
-                                aria-label="Why this group?">
-                          Why?
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Progress card */}
-          {done > 0 && (
-            <div className="card p-4 flex items-center gap-4">
-              <BlueMascot size={40} mood="happy" />
-              <div>
-                <p className="font-medium text-ink text-sm">Great progress!</p>
-                <p className="text-muted text-xs">
-                  You checked off {done} task{done !== 1 ? 's' : ''} today. Keep it up!
-                </p>
+      <div className="px-4 pb-8 sm:px-8">
+        <Card className="p-5">
+          <h2 className="mb-3 font-semibold text-ink">Your Team at a Glance</h2>
+          <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+            {settings.allowTeamContext ? (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[{ id: 'me', name: `${first} (You)`, status: 'on_track' as const }, ...TEAM.filter((m) => ['p3', 'p2', 'p6'].includes(m.id))].map((m) => {
+                  const [label, cls] = STATUS[(m.status ?? 'on_track') as keyof typeof STATUS];
+                  return (
+                    <li key={m.id} className="flex flex-col items-center text-center">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{initials(m.name)}</span>
+                      <span className="mt-1 text-sm font-medium text-ink">{m.name.split(' ')[0]}</span>
+                      <span className={`text-xs font-semibold ${cls}`}>{label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-muted">
+                <Users size={18} /> Teammates choose what they share. Turn on team context to see what they've opted to share.
+                <button onClick={() => openSettings()} className="ml-auto text-xs font-semibold text-blue-600 hover:underline">Settings</button>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT column */}
-        <div className="space-y-4">
-          {/* Team Updates */}
-          <div className="card p-5">
-            <h2 className="font-semibold text-ink mb-3">Team Updates</h2>
-            <div className="space-y-3">
-              {TEAM_UPDATES.map(u => (
-                <div key={u.id} className="flex items-start gap-3 py-1">
-                  <div className={[
-                    'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white text-xs font-bold',
-                    u.source === 'slack' ? 'bg-purple-500' :
-                    u.source === 'gmail' ? 'bg-red-500' : 'bg-blue-500'
-                  ].join(' ')}>
-                    {u.source === 'slack' ? 'S' : u.source === 'gmail' ? 'G' : 'C'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-ink">{u.text}</p>
-                    <p className="text-xs text-muted mt-0.5">{u.time}</p>
-                  </div>
-                </div>
-              ))}
+            )}
+            <div className="flex items-center justify-between gap-4 rounded-2xl bg-blue-50 p-4">
+              <div><p className="text-sm font-semibold text-ink">Need help with something?</p><p className="mt-0.5 text-xs text-muted">Ask Blue, or request support from your team. It's a sign of strength, not weakness.</p></div>
+              <button onClick={() => openDialog('askSenior')} aria-label="Request support from your team" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-white shadow hover:bg-blue-600"><Plus size={20} /></button>
             </div>
           </div>
-
-          {/* Quick Actions */}
-          <div className="card p-5">
-            <h2 className="font-semibold text-ink mb-3">Quick Actions</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { label: 'Ask Blue', icon: '💬' },
-                { label: 'Summarize', icon: '📋' },
-                { label: 'Write', icon: '✍️' },
-                { label: 'Find Help', icon: '🤝' },
-                { label: 'Create Task', icon: '➕' },
-                { label: 'More', icon: '⋯' },
-              ].map(a => (
-                <button key={a.label}
-                        className="flex flex-col items-center gap-1 p-3 rounded-xl bg-slate-50 hover:bg-blue-50
-                                   text-center text-xs text-ink font-medium hover:text-blue-600 transition-colors">
-                  <span className="text-lg">{a.icon}</span>
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="card p-5">
-            <h2 className="font-semibold text-ink mb-3">Recent Activity</h2>
-            <div className="space-y-3">
-              {[
-                { name: 'Alex', text: 'Completed design review', time: '2h ago', initials: 'AJ', color: 'bg-blue-500' },
-                { name: 'Priya', text: 'Added Figma comments', time: '3h ago', initials: 'PK', color: 'bg-purple-500' },
-                { name: 'Marcus', text: 'Updated Orion Billing docs', time: '4h ago', initials: 'MT', color: 'bg-green-500' },
-              ].map((a, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-7 h-7 rounded-full ${a.color} flex items-center justify-center text-white text-xs font-bold`}>
-                    {a.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-ink">{a.text}</p>
-                    <p className="text-xs text-muted">{a.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          <p className="mt-3 text-[11px] text-muted">Statuses are self-declared by each teammate and shared by choice. Blue never infers them, and there is no manager view.</p>
+        </Card>
       </div>
     </div>
   );
