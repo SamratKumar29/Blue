@@ -1,0 +1,72 @@
+[
+  {
+    "id": "msg_001",
+    "channel": "#atlas-dev",
+    "from": "Priya Kapoor",
+    "ts": "2026-10-12T08:45:00Z",
+    "text": "Hey @alex, I left review feedback on the design mockup for Atlas in Figma. Could you please take 15m to review it before our design sync?"
+  },
+  {
+    "id": "msg_002",
+    "channel": "#incidents",
+    "from": "Amir Hassan",
+    "ts": "2026-10-12T08:50:00Z",
+    "text": "BLOCKER: Production bug #471 on Atlas payment gateway is failing health checks. Need DevOps and infra input immediately. @alex do you have the deployment logs?"
+  },
+  {
+    "id": "msg_003",
+    "channel": "#product-atlas",
+    "from": "Rohan Mehta",
+    "ts": "2026-10-12T09:05:00Z",
+    "text": "For the checkout page, executive stakeholder feedback was just: 'make it faster'. We need to clarify what specific latency target or metric they are measuring against."
+  },
+  {
+    "id": "msg_004",
+    "channel": "#orion-billing",
+    "from": "Li Wei",
+    "ts": "2026-10-12T09:12:00Z",
+    "text": "Sorry team, I can't take this Orion database migration task this sprint. I am at full capacity with quarterly auditing until next week."
+  },
+  {
+    "id": "msg_005",
+    "channel": "#atlas-dev",
+    "from": "Sofia Andrade",
+    "ts": "2026-10-12T09:20:00Z",
+    "text": "Quick heads up, I temporarily placed the sandbox credential in our local debug config: API_KEY=sk_demo_1234567890abcdef. Please do not commit this."
+  },
+  {
+    "id": "msg_006",
+    "channel": "#atlas-dev",
+    "from": "Marcus Thompson",
+    "ts": "2026-10-12T09:35:00Z",
+    "text": "Please inspect the diff in https://github.com/acme/atlas/pull/482/files - diff snippet: @@ -42,6 +42,8 @@ const router = express.Router(); + router.post('/v2/checkout', validateToken);"
+  },
+  {
+    "id": "msg_007",
+    "channel": "#atlas-dev",
+    "from": "Marcus Thompson",
+    "ts": "2026-10-12T09:40:00Z",
+    "text": "@alex when you have time today, draft the initial API integration spec for Atlas partner onboarding."
+  },
+  {
+    "id": "msg_008",
+    "channel": "#general",
+    "from": "Priya Kapoor",
+    "ts": "2026-10-12T09:45:00Z",
+    "text": "Design system v2 tokens are now live across all Figma components. Reach out if anything is unstyled."
+  },
+  {
+    "id": "msg_009",
+    "channel": "#orion-billing",
+    "from": "Sofia Andrade",
+    "ts": "2026-10-12T09:50:00Z",
+    "text": "@alex following up on the database read-replica access request for Orion Billing. Admin approval is still pending."
+  },
+  {
+    "id": "msg_010",
+    "channel": "#random",
+    "from": "Rohan Mehta",
+    "ts": "2026-10-12T09:55:00Z",
+    "text": "Coffee catchup at 4pm by the terrace for anyone who wants a mental break!"
+  }
+]

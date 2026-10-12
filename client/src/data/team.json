@@ -1,0 +1,44 @@
+[
+  {
+    "id": "p1",
+    "name": "Marcus Thompson",
+    "role": "Tech Lead",
+    "expertise": ["Architecture", "APIs", "System design"],
+    "timezone": "UTC+5:30"
+  },
+  {
+    "id": "p2",
+    "name": "Amir Hassan",
+    "role": "DevOps Engineer",
+    "expertise": ["Prod incidents", "Deployments", "Cloud infra"],
+    "timezone": "UTC+5:30"
+  },
+  {
+    "id": "p3",
+    "name": "Priya Kapoor",
+    "role": "Designer",
+    "expertise": ["UI/UX", "Figma", "Design systems"],
+    "timezone": "UTC+5:30"
+  },
+  {
+    "id": "p4",
+    "name": "Rohan Mehta",
+    "role": "Product Manager",
+    "expertise": ["Product strategy", "User research", "Agile"],
+    "timezone": "UTC+5:30"
+  },
+  {
+    "id": "p5",
+    "name": "Li Wei",
+    "role": "Backend Engineer",
+    "expertise": ["Node.js", "Databases", "Performance"],
+    "timezone": "UTC+8"
+  },
+  {
+    "id": "p6",
+    "name": "Sofia Andrade",
+    "role": "Frontend Engineer",
+    "expertise": ["React", "TypeScript", "Accessibility"],
+    "timezone": "UTC+5:30"
+  }
+]
