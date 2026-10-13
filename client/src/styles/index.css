@@ -63,6 +63,7 @@
   .blue-quiver { animation: b-quiver .5s ease-in-out infinite; transform-origin: center; }
   .blue-yawn { animation: b-yawn 4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
   .blue-sweat { animation: b-sweat 2s ease-in infinite; }
+  .blue-brow-worry { animation: b-brow-worry 1.2s ease-in-out infinite; }
   .blue-brow-up { animation: b-brow 1.1s ease-in-out infinite; }
   @keyframes b-nod { 0%,100% { transform: rotate(0) translateY(0); } 40% { transform: rotate(9deg) translateY(3%); } 55% { transform: rotate(-2deg); } 70% { transform: rotate(7deg) translateY(2%); } }
   @keyframes b-shiver { 0%,100% { transform: translateX(-1.2%) rotate(-1deg); } 50% { transform: translateX(1.2%) rotate(1deg); } }
@@ -70,7 +71,8 @@
   @keyframes b-quiver { 0%,100% { transform: translateY(0); } 50% { transform: translateY(1.5px); } }
   @keyframes b-yawn { 0%,100% { transform: scale(.5); } 45%,60% { transform: scale(1.1,1.2); } }
   @keyframes b-sweat { 0% { opacity: 0; transform: translateY(-4px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(16px); } }
-  @keyframes b-brow { 0%,100% { transform: translateY(0) rotate(var(--r,0)); } 50% { transform: translateY(-30%) rotate(var(--r,0)); } }
+  @keyframes b-brow { 0%,100% { margin-top: 0; } 50% { margin-top: -2.5%; } }
+  @keyframes b-brow-worry { 0%,100% { margin-top: 0; } 50% { margin-top: -1%; } }
 }
 
 @layer utilities {

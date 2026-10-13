@@ -114,17 +114,22 @@ function Mouth({ mood }: { mood: MascotMood }) {
 }
 
 function Brows({ mood }: { mood: MascotMood }) {
-  if (mood !== 'worried' && mood !== 'sleepy' && mood !== 'excited' && mood !== 'encouraging') return null;
-  const d = mood === 'worried'
-    ? [{ l: 29, t: 37, r: -16 }, { l: 56, t: 30, r: 16 }]
-    : mood === 'sleepy'
-      ? [{ l: 29, t: 40, r: 8 }, { l: 56, t: 33, r: -8 }]
-      : [{ l: 29, t: 36, r: -8 }, { l: 56, t: 29, r: 8 }];
+  const paths: Partial<Record<MascotMood, string>> = {
+    excited: 'M3 11 Q20 -1 37 9',
+    encouraging: 'M3 10 Q20 2 37 9',
+    worried: 'M3 12 Q20 9 37 2',
+    sleepy: 'M3 11 Q20 5 37 7',
+  };
+  const d = paths[mood];
+  if (!d) return null;
+  const brows = [{ l: 28.5, t: 36.5, flip: false }, { l: 55, t: 29.5, flip: true }];
   return (
     <>
-      {d.map((b, i) => (
-        <span key={i} aria-hidden="true" className={mood === 'excited' ? 'absolute blue-brow-up' : 'absolute'}
-          style={{ left: `${b.l}%`, top: `${b.t}%`, width: '16%', height: '3.2%', borderRadius: 99, background: '#1B2D63', transform: `rotate(${b.r}deg)`, ['--r' as string]: `${b.r}deg` } as React.CSSProperties} />
+      {brows.map((b, i) => (
+        <svg key={i} aria-hidden="true" viewBox="0 0 40 14" className={`absolute ${mood === 'excited' ? 'blue-brow-up' : mood === 'worried' ? 'blue-brow-worry' : ''}`}
+          style={{ left: `${b.l}%`, top: `${b.t}%`, width: '17%', transform: b.flip ? 'scaleX(-1)' : undefined, overflow: 'visible' }}>
+          <path d={d} fill="none" stroke="#1B2D63" strokeWidth="3.4" strokeLinecap="round" />
+        </svg>
       ))}
     </>
   );
