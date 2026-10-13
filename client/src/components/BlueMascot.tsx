@@ -1,3 +1,4 @@
+import { useState } from 'react';
 export type MascotMood =
   | 'happy'
   | 'thinking'
@@ -43,18 +44,84 @@ function Badge({ children, size }: { children: React.ReactNode; size: number }) 
   );
 }
 
+const BODY: Record<MascotMood, string> = {
+  happy: 'blue-bob',
+  wink: 'blue-bob',
+  calm: 'blue-breathe',
+  excited: 'blue-hop',
+  thinking: 'blue-tilt',
+  working: 'blue-type',
+  encouraging: 'blue-pulse',
+  sleep: 'blue-breathe-slow',
+};
+
+// Eye boxes (top-left, size) as % of the image (measured from blue.png)
+const EYES = [
+  { l: 28.5, t: 42.5, w: 19.5, h: 24.5, id: 'l' },
+  { l: 54.5, t: 35.5, w: 21.5, h: 21.5, id: 'r' },
+];
+
+function Eyelids({ mood }: { mood: MascotMood }) {
+  const closed = mood === 'sleep';
+  return (
+    <>
+      {EYES.map((e) => {
+        const winking = mood === 'wink' && e.id === 'r';
+        const cls = closed ? '' : winking ? 'blue-wink' : mood === 'wink' ? '' : 'blue-blink';
+        if (!closed && !cls) return null;
+        return (
+          <span
+            key={e.id}
+            aria-hidden="true"
+            className={`absolute rounded-[50%] ${cls}`}
+            style={{
+              left: `${e.l}%`, top: `${e.t}%`, width: `${e.w}%`, height: `${e.h}%`,
+              background: 'radial-gradient(circle at 50% 30%, #6C9BF7, #3F73E8)',
+              transformOrigin: 'top', transform: closed ? 'scaleY(.9)' : 'scaleY(0)',
+            }}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+function Cheeks({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <>
+      {[{ l: 33, t: 70 }, { l: 62, t: 62 }].map((c, i) => (
+        <span key={i} aria-hidden="true" className="absolute rounded-full blue-blush"
+          style={{ left: `${c.l}%`, top: `${c.t}%`, width: '9%', height: '5%', background: '#FF8FB8', filter: 'blur(2px)' }} />
+      ))}
+    </>
+  );
+}
+
 export default function BlueMascot({ size = 56, mood = 'happy', className = '', float = false }: BlueMascotProps) {
   const h = Math.round(size * ASPECT);
   const sleeping = mood === 'sleep';
+  const [hearts, setHearts] = useState<number[]>([]);
+  const [tick, setTick] = useState(0);
+  const pet = () => {
+    if (sleeping) return;
+    const id = Date.now();
+    setTick((t) => t + 1);
+    setHearts((hs) => [...hs.slice(-4), id]);
+    setTimeout(() => setHearts((hs) => hs.filter((x) => x !== id)), 1200);
+  };
   const label = mood === 'wink' || mood === 'calm' ? 'happy' : mood;
 
   return (
     <span
-      className={`relative inline-block flex-shrink-0 ${float || mood === 'excited' ? 'animate-float' : ''} ${className}`}
+      className={`relative inline-block flex-shrink-0 ${float ? 'animate-float' : ''} ${className}`}
       style={{ width: size, height: h }}
       role="img"
       aria-label={`Blue mascot, ${label}`}
+      onMouseEnter={pet}
     >
+      <span key={tick} className={`absolute inset-0 blue-body ${BODY[mood]} ${tick ? 'blue-wiggle' : ''}`}>
+      <span className="blue-glow absolute inset-0" style={{ filter: sleeping ? undefined : undefined }}>
       <img
         src="/blue.png"
         alt=""
@@ -64,13 +131,26 @@ export default function BlueMascot({ size = 56, mood = 'happy', className = '', 
         className="block w-full h-full select-none"
         style={sleeping ? { filter: 'saturate(0.55) brightness(0.82)' } : undefined}
       />
+      <Eyelids mood={mood} />
+      <Cheeks show={mood !== 'sleep' && mood !== 'thinking'} />
+      </span>
+      </span>
+      {hearts.map((id, i) => (
+        <span key={id} aria-hidden="true" className="absolute blue-heart pointer-events-none"
+          style={{ left: `${30 + ((i * 23) % 40)}%`, top: '10%', fontSize: Math.max(10, size * 0.2) }}>💙</span>
+      ))}
+      {mood === 'thinking' && (
+        <span aria-hidden="true" className="absolute flex gap-0.5" style={{ left: '2%', top: '2%' }}>
+          {[0, 1, 2].map((d) => <span key={d} className="blue-dot rounded-full bg-blue-500" style={{ width: Math.max(3, size * 0.06), height: Math.max(3, size * 0.06), animationDelay: `${d * 0.2}s` }} />)}
+        </span>
+      )}
 
       {mood === 'thinking' && <Badge size={size}>?</Badge>}
       {mood === 'encouraging' && <Badge size={size}>💙</Badge>}
       {sleeping && (
         <span
           aria-hidden="true"
-          className="absolute -top-2 right-0 font-bold text-blue-500 animate-float"
+          className="absolute -top-2 right-0 font-bold text-blue-500 blue-zzz"
           style={{ fontSize: Math.max(10, size * 0.2) }}
         >
           zZz
