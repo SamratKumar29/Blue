@@ -35,7 +35,7 @@ export default function Bubble() {
       {open && (
         <div role="region" aria-label="Blue quick menu" className="absolute bottom-16 right-0 w-72 rounded-3xl border border-slate-100 bg-white p-4 shadow-2xl animate-pop">
           <div className="flex items-center gap-3">
-            <BlueMascot size={64} mood={resting ? 'sleep' : 'wink'} />
+            <BlueMascot size={64} mood={resting ? 'sleep' : presence === 'preroll' ? 'sleepy' : 'wink'} />
             <div>
               <p className="font-semibold text-ink">Hey! I'm Blue</p>
               <p className="text-xs text-muted">{resting ? (paused ? 'Paused. I am not reading anything.' : 'Resting outside your work hours.') : 'How can I help you today?'}</p>

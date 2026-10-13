@@ -72,7 +72,7 @@ export default function CheckinDialog() {
     <Modal title={`Hey ${settings.name.split(' ')[0]}! 👋`} subtitle="Private, optional, skippable" mood="encouraging" onClose={close} wide
       footer={<button onClick={close} className={btnGhost}>Skip for now</button>}>
       <div className="flex items-center gap-4">
-        <BlueMascot size={96} mood="encouraging" float />
+        <BlueMascot size={96} mood={mood === 'Stressed' ? 'worried' : mood === 'A bit tired' ? 'sleepy' : mood === 'Great' ? 'excited' : 'encouraging'} float />
         <div><p className="text-lg font-semibold text-ink">Just checking in on you. How are you feeling today?</p><p className="text-sm text-muted">No pressure! Just a quick check-in. Your well-being matters. 💙</p></div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4" role="radiogroup" aria-label="How are you feeling">
