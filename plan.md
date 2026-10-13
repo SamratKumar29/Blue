@@ -326,7 +326,7 @@ blue/
 
 ## 4. PROGRESS TRACKER (update after every step)
 
-**CURRENT POINTER:** `S2.1`
+**CURRENT POINTER:** `S8.1` (S4.2/S4.5 blocked on GEMINI_API_KEY; S7 blocked on GCP project ID)
 
 **Schedule (target, adjust if needed):**
 | Day | Date | Phases |
@@ -343,11 +343,11 @@ blue/
 
 - [x] Phase 0 gate passed
 - [x] Phase 1 gate passed
-- [ ] Phase 2 gate passed
-- [ ] Phase 3 gate passed
+- [x] Phase 2 gate passed
+- [x] Phase 3 gate passed
 - [ ] Phase 4 gate passed
 - [ ] Phase 5 gate passed
-- [ ] Phase 6 gate passed
+- [x] Phase 6 gate passed
 - [ ] Phase 7 gate passed
 - [ ] Phase 8 gate passed
 - [ ] Phase 9 gate passed (SUBMITTED)
@@ -363,9 +363,11 @@ blue/
 2026-10-12 | S0.5 | Antigravity | @google/genai SDK, gemini-3.8-flash (stable); Vertex mode via vertexai:true + project/location
 2026-10-12 | S0.6 | Antigravity | @litert-lm/core, Gemma 4 E2B/E4B/12B/26B-A4B/31B .litertlm files, WebGPU required, HuggingFace hosted, Gemma Terms of Use
 2026-10-12 | S1.1-S1.9 | Antigravity | Client + server scaffolded, Tailwind tokens, Blue mascot SVG, Home dashboard, Bubble, 8-section Settings modal, static routes, screenshots captured (docs/screens/)
+2026-10-12 | S2-S6 | Claude | built; see docs/HANDOFF.md
+2026-10-13 | verify | Claude | tsc, build, vitest 37 pass; e2e/smoke.mjs all checks pass, 0 console errors (fixed test races + bubble test uses fresh profile); verified-apis.md Gemma corrected
 ```
 
-**Blockers:** S0.4 GCP project not yet set up (user will provide when ready); continue Phases 1-3 without cloud.
+**Blockers:** S4.2/S4.5 need GEMINI_API_KEY in server/.env for a live run (Phase 4/5 gates stay open). S7 needs GCP project ID. S4.6 Local Gemma unverified on real WebGPU. S0.4 GCP project not yet set up (user will provide when ready); continue Phases 1-3 without cloud.
 
 **Decisions log** (anything the user decided later):
 
@@ -474,7 +476,7 @@ Goal: the app looks like the approved mock (3 panels: side bubble, dashboard, se
 
 # PHASE 2 — Types, sample data, encrypted local memory, audit log (Day 2 morning)
 
-- [ ] **S2.1 Core types**
+- [x] **S2.1 Core types**
   - Files: `client/src/core/types.ts`.
   - Do: define and export (exact names matter, later steps import them):
 
@@ -558,7 +560,7 @@ export interface Summary {
 
 - Verify: `cd client && npx tsc --noEmit` passes.
 
-- [ ] **S2.2 Sample data ("Demo Workspace")**
+- [x] **S2.2 Sample data ("Demo Workspace")**
   - Files in `client/src/data/`. All content fictional. Use persona: user "Alex Johnson", product team, project names "Atlas" (web app), "Orion Billing".
   - Do: create:
     - `messages.json`: 10 Slack-like items `{id, channel, from, ts, text}`. Include: a request for design review feedback; a blocked production bug needing DevOps input; an ambiguous requirement ("make it faster?" with no target); a teammate declining a task ("I can't take this, I'm at capacity this week"); a message containing a **fake secret** like `API_KEY=sk_demo_1234567890abcdef`; a message containing a **codebase link** like `https://github.com/acme/atlas/pull/482/files` and a pasted diff snippet. These last two exist to prove the privacy filters.
@@ -568,19 +570,19 @@ export interface Summary {
     - `policies/leave-and-hours.md`, `policies/incident-escalation.md`, `policies/code-review-norms.md` (each 150 to 250 words, fictional) and `project_brief.md` (200 words about Atlas with milestones).
   - Verify: `node -e "for (const f of ['messages','emails','calendar','team']) JSON.parse(require('fs').readFileSync('client/src/data/'+f+'.json','utf8')); console.log('ok')"` prints ok.
 
-- [ ] **S2.3 Encrypted memory (WebCrypto + IndexedDB)**
+- [x] **S2.3 Encrypted memory (WebCrypto + IndexedDB)**
   - Files: `core/memory/crypto.ts`, `core/memory/db.ts`.
   - Do:
     - `crypto.ts`: `getKey()` creates (once) a **non-extractable** AES-GCM 256 `CryptoKey` via `crypto.subtle.generateKey({name:'AES-GCM',length:256}, false, ['encrypt','decrypt'])` and stores the key object in IndexedDB (CryptoKey objects can be stored there). `encryptJson(obj)` returns `{iv, data}` (random 12-byte iv per call); `decryptJson()` reverses it.
     - `db.ts` (using `idb`): object stores `settings`, `tasks`, `summaries`, `audit`, `outbox`, `meta`. Export `put(store, id, obj)`, `get(store, id)`, `getAll(store)`, `del(store, id)`, `clearAll()`. Everything except `meta` (which holds the key) is encrypted before saving.
   - Verify (unit test `memory.test.ts`, use `fake-indexeddb` as a dev dependency): put then get returns the same object; the raw stored value does not contain a known plaintext string; `clearAll()` empties all stores. `npx vitest run` passes.
 
-- [ ] **S2.4 Audit log**
+- [x] **S2.4 Audit log**
   - Files: `core/memory/audit.ts`.
   - Do: `logAudit(action, allowed, detail)` writes an `AuditEntry` (id = uuid, at = ISO time). **Rule: `detail` must never contain a message/email body**; accept only short descriptors like `"approved send to Priya (hash a3f1…)"`. Add `listAudit()` and `clearAudit()`.
   - Verify: unit test writes 3 entries and reads them back newest first.
 
-- [ ] **S2.5 App store (zustand) with persistence**
+- [x] **S2.5 App store (zustand) with persistence**
   - Files: `client/src/store.ts`.
   - Do: a zustand store holding `settings`, `tasks`, `summaries`, `audit`, `outbox`, and actions `updateSettings`, `addTask`, `completeTask`, `loadAll` (reads from encrypted DB on startup), `clearMyBlue` (calls `clearAll`, resets to defaults). Defaults follow D6: `allowWriting:false`, `allowConnectors:false`, `allowTeamContext:false`, `presence:'work_hours'`, `workStart:'09:30'`, `workEnd:'18:00'`, `waterReminderMin:90`, `modelMode:'cloud'` until local is verified, `praise/checkins/toneObservations:true`, `retentionDays:30`. Replace the hardcoded arrays on Home/Tasks with store data (start with an empty list and the sample "manual" tasks).
   - Verify: add a task in the UI, refresh the page, it is still there; in DevTools > Application > IndexedDB the stored values look like encrypted blobs, not readable text.
@@ -593,7 +595,7 @@ export interface Summary {
 
 The policy gate is the product's trust centerpiece and a major demo moment. It is plain deterministic code. **No model output may ever bypass it.**
 
-- [ ] **S3.1 Implement the policy gate**
+- [x] **S3.1 Implement the policy gate**
   - Files: `core/policy/gate.ts`.
   - Do: implement exactly this contract:
 
@@ -649,21 +651,21 @@ export async function verifyApproval(
 
 - Verify: `gate.test.ts` with at least these tests: codebase read denied; blue_to_blue denied even when all settings are true; send denied when `allowWriting=false`; send needs approval when true; `verifyApproval` fails after editing one character of `content`; when `paused=true`, every action including `draft_local` is denied (but `read_codebase` etc. stay denied for their own reasons). `npx vitest run` passes.
 
-- [ ] **S3.2 First-run Permission Center**
+- [x] **S3.2 First-run Permission Center**
   - Files: `components/PermissionCenter.tsx`.
   - Do: on first launch (a `meta` flag `onboarded`), show a full-screen friendly card "Set up your Blue" with: model mode shown honestly (Local / Cloud), "Gemini API: Off/On", a list of sources with a toggle each (Demo Workspace: Slack-like, Gmail-like, Calendar-like, Policy docs; each labeled "read-only"), a fixed line "Codebase access: never", "Blue-to-Blue: off", "Write actions: off (you can enable later)", work hours (start/end), and Presence. A big "Start my Blue" button saves to settings and logs an audit entry. This screen is also the first scene of the demo video.
   - Verify: fresh browser profile shows it; after finishing, it does not reappear; `allowConnectors` reflects the choice.
 
-- [ ] **S3.3 Wire Settings sections to real state**
+- [x] **S3.3 Wire Settings sections to real state**
   - Do: make every Settings section read and write the store: General (name, timezone, presence), Privacy & Data (the three toggles, retention days select 7/30/90, buttons "Export my data" (downloads decrypted JSON of settings, tasks, summaries) and "Clear my Blue" (confirm dialog then `clearMyBlue`)), AI Model (see S4.7 for the card; for now show provider radio), Connectors (Demo Workspace toggle plus per-source toggles, "last access" time), Notifications (independent switches: Praise, Check-ins, Tone observations, Water/work reminder with minutes input), Work Hours (start, end, presence), Appearance (light/dark placeholder, compact mode), About (version, "Built for Google Cloud AI Builder Cup 2026", principles list).
   - Verify: change each setting, reload, values persist; "Clear my Blue" empties memory and returns to the Permission Center.
 
-- [ ] **S3.4 Privacy panel page**
+- [x] **S3.4 Privacy panel page**
   - Files: `settings/PrivacyPanel.tsx` (shown inside Privacy & Data, and linked from the bubble).
   - Do: show (a) Model mode with honest text per D5, (b) Sources with permission status and last-access time (store `lastAccess` per source in `meta`), (c) "What Blue remembers" list by category with counts (tasks, summaries, preferences, audit entries) and a "View" and "Delete" button per category, (d) the Audit log table (time, action, allowed/blocked, short detail) with "Clear log", (e) fixed statements: "No codebase access", "Raw messages are not stored", "No manager access".
   - Verify: do something that writes memory, then see the counts change; deleting a category empties it.
 
-- [ ] **S3.5 Gate integration helper**
+- [x] **S3.5 Gate integration helper**
   - Files: `core/policy/useGate.ts`.
   - Do: a function `guard(request, run)` that calls `decide`, logs an audit entry for every outcome (allowed true/false), returns the denial reason to the UI when denied, and when `needs_approval` opens an `ApprovalDialog` showing recipient, exact content, effect, and the text "Demo: nothing is actually sent." with Approve and Cancel; on Approve it calls `verifyApproval` again immediately before `run()`.
   - Files: also `components/ApprovalDialog.tsx`.
@@ -675,23 +677,23 @@ export async function verifyApproval(
 
 # PHASE 4 — Backend, AI providers, Cloud Run-ready server (Day 3)
 
-- [ ] **S4.1 Express server skeleton**
+- [x] **S4.1 Express server skeleton**
   - Files: `server/src/index.ts`, `server/src/routes/health.ts`, `server/tsconfig.json`, `server/package.json` scripts.
   - Do: Express app, `app.use(express.json({ limit: '200kb' }))`, `GET /api/health` returns `{ok:true}`, `GET /api/config` returns `{ cloudAvailable: boolean, model: process.env.GEMINI_MODEL }`. After API routes, serve static files from `server/public` and send `index.html` for non-API routes (SPA fallback). Listen on `process.env.PORT || 8080`. Scripts: `"dev": "tsx watch src/index.ts"`, `"build": "tsc"`, `"start": "node dist/index.js"`.
   - Rule: **never log request bodies**. Log only method, path, status, duration.
   - Verify: `npm run dev` then `curl localhost:8080/api/health` returns `{"ok":true}`.
 
-- [ ] **S4.2 Gemini wrapper**
+- [!] **S4.2 Gemini wrapper**
   - Files: `server/src/gemini.ts`.
   - Do: using the SDK and call shape recorded in `docs/verified-apis.md` (S0.5): create the client once. If `USE_VERTEX==='true'` use Vertex mode with `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` (no API key; Cloud Run's service account provides credentials). Otherwise use `GEMINI_API_KEY` (local dev only). Export `complete({ system, prompt, jsonSchema? })` returning `{ text }`. When `jsonSchema` is given, request JSON output with that schema. Model id comes from `process.env.GEMINI_MODEL`; throw a clear error if it is missing.
   - Verify: create `server/.env` (git-ignored) with a dev key and model id, run `npx tsx -e "import('./src/gemini').then(m=>m.complete({system:'Reply with one word.',prompt:'Say hi'}).then(console.log))"` and see a short reply.
 
-- [ ] **S4.3 /api/ai/complete route with safety limits**
+- [x] **S4.3 /api/ai/complete route with safety limits**
   - Files: `server/src/routes/ai.ts`, `server/src/limits.ts`.
   - Do: `POST /api/ai/complete` with body `{ system: string, prompt: string, jsonSchema?: object }`. Validate types; reject if `system+prompt` exceeds 30,000 characters (HTTP 413). Add a simple in-memory rate limit of 30 requests per minute per IP (HTTP 429). Add a server-side guard that **rejects prompts containing obvious repo/diff markers** (`diff --git`, `@@ -`, `-----BEGIN`, `ghp_`, `sk_`, `AKIA`) with HTTP 422 and the message "Content excluded by privacy rules." (defense in depth; the client filters first). Return `{ text }`. Never store or log content.
   - Verify: curl with a normal body returns text; a body with `diff --git` returns 422; a 40k-char body returns 413.
 
-- [ ] **S4.4 ModelProvider interface (client)**
+- [x] **S4.4 ModelProvider interface (client)**
   - Files: `core/ai/provider.ts`.
   - Do:
 
@@ -722,18 +724,18 @@ export async function completeJson<T>(
 
 - Verify: `npx tsc --noEmit` passes.
 
-- [ ] **S4.5 GeminiCloudProvider**
+- [!] **S4.5 GeminiCloudProvider**
   - Files: `core/ai/geminiCloud.ts`.
   - Do: implement `ModelProvider` with `dataLeavesDevice: true`, `label: 'Gemini (Cloud via Cloud Run)'`. `isAvailable` calls `GET /api/config`. `complete` POSTs to `/api/ai/complete` and returns `text`. **Before sending**, it must go through `guard({type:'cloud_inference'}, ...)` from S3.5 so the first use asks for consent and sets `cloudConsentGiven`.
   - Verify: add a temporary "Test AI" button; with consent given it shows a model reply; without consent it asks first; audit log shows the entries.
 
-- [ ] **S4.6 LocalGemmaProvider (time-boxed: 3 hours total; use the fallback if exceeded)**
+- [x] **S4.6 LocalGemmaProvider (time-boxed: 3 hours total; use the fallback if exceeded)**
   - Files: `core/ai/localGemma.ts`.
   - Do (use only what `docs/verified-apis.md` S0.6 recorded): install the documented JS package; implement `isAvailable()` (check browser requirements such as WebGPU; return a clear `reason` if unsupported); implement model loading from a user-selected file (file input in Settings > AI Model) and cache it with the Cache API or OPFS so it loads only once; show a progress indicator; implement `complete` using the runtime's generate call with a system prompt prepended to the user prompt if the runtime has no system role; limit output tokens to a reasonable cap. `dataLeavesDevice: false`, `label: 'Gemma (Local)'`.
   - Fallback if it cannot be made to run in 3 hours: leave the provider returning `{ok:false, reason:'Not available on this device/browser'}`, keep the code behind a feature flag, set the default `modelMode` to `'cloud'`, add a Blocker note, and make the UI say honestly "Local model not available on this device". The pitch then says "local-first architecture with a pluggable local Gemma provider (experimental)".
   - Verify: if working: switch to Local mode, ask a short question, get an answer with the network tab showing **no** request to `/api/ai/complete`. If fallback: the UI shows the honest message and nothing crashes.
 
-- [ ] **S4.7 AI Model settings card (honest)**
+- [x] **S4.7 AI Model settings card (honest)**
   - Files: `settings/AiModel.tsx` and use it in General.
   - Do: show a card like the mock: provider label and status chip (Active / Unavailable), and the sentence from D5 chosen by `dataLeavesDevice`. A radio to switch between Local and Cloud. A "Change model" button opens a small dialog (local: choose model file; cloud: shows model id from `/api/config`, read-only). Show "Gemini API: Optional, off unless you choose Cloud".
   - Verify: switching modes updates the label and the Privacy panel text; local text never appears while cloud is active.
@@ -750,7 +752,7 @@ General rules for all prompts (put them in `core/ai/prompts.ts` as named constan
 - Structured outputs use `completeJson` with a schema in `core/ai/schemas.ts` and a validator function.
 - Features must work with **either** provider.
 
-- [ ] **S5.1 Connector + codebase filter + privacy transform**
+- [x] **S5.1 Connector + codebase filter + privacy transform**
   - Files: `core/connectors/demoWorkspace.ts`, `core/connectors/filters.ts`, `core/features/transform.ts`.
   - Do:
     1. `demoWorkspace.ts`: `fetchApproved(settings)` returns `{messages, emails, events}` from the JSON files **only if** `guard({type:'read_source', source})` allows, one call per source; update `lastAccess`.
@@ -758,45 +760,45 @@ General rules for all prompts (put them in `core/ai/prompts.ts` as named constan
     3. `transform.ts`: `toActionableFacts(items)` runs filters on each item, drops codebase items, redacts secrets, then asks the model to extract **only** `{tasks[], blockers[], decisions[], dates[], shortSummary}` per batch (JSON). Output carries `Provenance` pointers (item ids). **Raw bodies are never returned to callers or stored.**
   - Verify (unit test): feeding `messages.json` yields output with no `sk_demo_` string and no github PR URL; audit shows 1 or more "excluded" entries; stored memory contains no body text (search the IndexedDB dump in the test for a known phrase from a message; it must not appear).
 
-- [ ] **S5.2 Task triage with explanations**
+- [x] **S5.2 Task triage with explanations**
   - Files: `core/features/triage.ts`.
   - Do: input = actionable facts + manual tasks. Prompt the model to return JSON array of tasks matching the `Task` type fields it controls: `title, project, estimateMin, effort, group, urgency, blocker?, suggestedHelperId?, explanation{sourceCategory,confidence,reason}`. Rules in the prompt: easy wins = under 30 minutes and no dependencies; needs_senior = blocked, ambiguous, or access-dependent; next_up = everything else; order within groups by urgency then effort. `suggestedHelperId` must be one of the ids in `team.json` and **only if `allowTeamContext` is true**; otherwise omit. After parsing, **validate in code**: unknown helper ids are removed; `confidence` clamped to 0..1; `estimateMin` between 5 and 480. Save to the store.
   - UI: in Tasks and Home, each task has an "Why?" popover showing `sourceCategory`, a confidence bar, and `reason`; users can drag or use a menu "Move to…" to correct the group manually (assumptions are editable).
   - Verify: run triage on the sample data: you get 6 to 12 tasks across the 3 groups; the production-bug item lands in needs_senior with the DevOps person suggested; the "Why?" popover works; manual correction persists.
 
-- [ ] **S5.3 Morning roundup**
+- [x] **S5.3 Morning roundup**
   - Files: `core/features/roundup.ts`, `components/RoundupCard.tsx`.
   - Do: `generateRoundup()` = fetch approved sources, transform, triage, then ask the model for a short digest (max 120 words) in this order: easy tasks first, harder tasks next, then "tasks likely to benefit from senior input". Each line must reference its provenance ref (render as a small link chip "Slack · #product"). Save a `Summary` (text + provenance pointers only). The Home hero card's right arrow opens the roundup. Show a "Refresh" button and a footer "Based on: Slack, Gmail, Calendar (read-only)".
   - Verify: click "Your day, simplified" and the roundup appears with source chips; the stored summary contains no raw message text.
 
-- [ ] **S5.4 Ask a Senior (human-in-the-loop help request)**
+- [x] **S5.4 Ask a Senior (human-in-the-loop help request)**
   - Files: `core/features/askSenior.ts`, `components/AskSeniorDialog.tsx`.
   - Do: for a task in needs_senior (or from the Team page button), generate a help request draft with this fixed structure: **Context** (1 sentence) · **What I tried** (bullets, user-editable) · **Specific ask** · **Smallest useful next step** · **Timing**. The tone must normalize asking for help (never apologetic or self-deprecating). The helper suggestion comes only from `team.json` and shows "Why this person: <expertise match>". Output goes to the **approval dialog** (S3.5) as a `send_message` action; nothing is sent unless approved.
   - Verify: from the production-bug task, the dialog shows the DevOps teammate, a structured draft, and the Approve button respects the gate (blocked when writing is off, adds to Outbox when on).
 
-- [ ] **S5.5 Draft message and Summarize/Write quick actions**
+- [x] **S5.5 Draft message and Summarize/Write quick actions**
   - Files: `core/features/draft.ts`.
   - Do: wire the Quick Actions: **Write** (user describes intent, Blue drafts; always goes through the approval dialog if the user presses "Send"), **Summarize** (paste text or pick a source; returns 3 bullets), **Create Task**, **Find Help** (opens Ask a Senior), **Ask Blue** (opens Chat). Drafts are local objects; sending is simulated per D7.
   - Verify: Write produces an editable draft; Send is gated; Summarize returns bullets; nothing is persisted except the user-approved outbox item.
 
-- [ ] **S5.6 Policy and project retrieval (approved documents only)**
+- [x] **S5.6 Policy and project retrieval (approved documents only)**
   - Files: `core/features/retrieval.ts`.
   - Do: load `data/policies/*.md` and `project_brief.md` as the approved knowledge base (only if `allowTeamContext` or a separate "policy docs" source toggle is on). Chunk by paragraph (about 120 words). Implement simple BM25 or TF-IDF keyword scoring in plain TypeScript (no external service needed). `retrieve(query, k=3)` returns chunks with doc names. Chat and Ask-a-Senior prompts include retrieved chunks and must cite the doc name. Files page lists these docs as read-only.
   - Verify: query "who do I escalate a production incident to" returns the incident-escalation chunk first; unit test covers it.
 
-- [ ] **S5.7 Chat with grounded answers and tone-aware replies**
+- [x] **S5.7 Chat with grounded answers and tone-aware replies**
   - Files: `pages/Chat.tsx`, `core/features/chat.ts`.
   - Do: chat sends the user's message + current tasks (titles only) + retrieved policy chunks. System prompt adds: "If the user seems rude or distressed, stay calm, acknowledge friction without scolding, and offer a pause or a simpler next step. Do not label or score the user. Do not treat profanity as a health signal. Do not diagnose." If `toneObservations` is off, omit that paragraph. Add small "source" chips under answers when policy chunks were used. Chat history is kept **in memory only for the session** unless the user taps "Save this note" (stores a short summary).
   - Verify: ask "What is our escalation policy?" and get a cited answer; type an angry message ("this is stupid, I'm done") and get a calm, non-judgmental reply offering a break or a smaller step; no scores or labels anywhere.
 
-- [ ] **S5.8 Culture features: capacity-aware alternatives and respectful praise**
+- [x] **S5.8 Culture features: capacity-aware alternatives and respectful praise**
   - Files: `core/features/capacity.ts`, `core/features/praise.ts`.
   - Do:
     1. On the Team page add "A teammate said no" on a task: Blue treats it as **capacity information**. It returns 3 options as JSON: split the task, reduce scope or move the deadline, find another approved helper (from `team.json` only), plus a short, respectful reply the user can draft back (goes through the gate). The prompt forbids judging the person.
     2. `praise.ts`: when a task is completed and `praise` is on, show a restrained, specific message such as "You closed the review and unblocked the next step." (model-generated from the task title and `blocker`, max 20 words, no exclamation spam, no streaks). When `praise` is off, show nothing.
   - Verify: the "said no" flow never uses words like lazy/weak/uncommitted (add a unit test on a few sample outputs if the provider is mocked); completing a task shows specific praise only if enabled.
 
-- [ ] **S5.9 Provider mocking for tests and offline demo**
+- [x] **S5.9 Provider mocking for tests and offline demo**
   - Files: `core/ai/mockProvider.ts`.
   - Do: a `MockProvider` returning canned JSON for each feature (used in unit tests and as an automatic fallback labelled "Offline demo mode" if both real providers are unavailable, so the app never crashes in front of judges).
   - Verify: set an invalid model id on the server; the UI shows "Offline demo mode" banner and features still render sample output.
@@ -807,21 +809,21 @@ General rules for all prompts (put them in `core/ai/prompts.ts` as named constan
 
 # PHASE 6 — Work hours, presence, scheduling, wellbeing (Day 4 afternoon)
 
-- [ ] **S6.1 Presence logic (pure functions + tests)**
+- [x] **S6.1 Presence logic (pure functions + tests)**
   - Files: `core/presence/workHours.ts`, `workHours.test.ts`.
   - Do: `getPresence(now: Date, s: Settings): 'paused' | 'sleeping' | 'preroll' | 'active'`. Rules: if `paused` return `'paused'`. Mode `work_hours`: `preroll` from 30 minutes before `workStart` until `workStart`; `active` from `workStart` to `workEnd`; otherwise `sleeping`. Mode `laptop_awake`: `active` whenever the app is open (never `sleeping`), but it still performs **no** background polling or ambient monitoring. Use the user's timezone setting (use `Intl.DateTimeFormat` with `timeZone`). Export `canRunBackgroundWork(presence)` = true only for `preroll` and `active` in work_hours mode.
   - Verify: tests for 08:59 (sleeping), 09:00 (preroll), 09:30 (active), 18:00 (sleeping), paused at 10:00 (paused), laptop_awake at 23:00 (active) with `canRunBackgroundWork` behaving per rules.
 
-- [ ] **S6.2 Scheduler and demo clock**
+- [x] **S6.2 Scheduler and demo clock**
   - Files: `core/presence/scheduler.ts`, `core/presence/demoClock.ts`, `components/DemoClockPanel.tsx`.
   - Do: a `now()` function that returns the real time unless a demo override is set. A small "Demo clock" floating panel visible only with the URL query `?demo=1` that lets us set the simulated time. The scheduler runs a `setInterval` (every 30 s) that: if `canRunBackgroundWork` is false, does nothing; in `preroll` and the roundup is enabled, offers the roundup once per day (a non-intrusive bubble badge, never auto-sends anything); water/work reminder every `waterReminderMin` minutes only while active. If the page was closed at the scheduled time, on next open show "Here's your roundup" (never pretend it ran on schedule).
   - Verify: with `?demo=1` set time to 09:05: the bubble shows a roundup badge; set 19:00: the bubble shows grey sleeping dot, polling stops (no `setInterval` work), and opening the dashboard shows a quiet "Blue is resting outside your work hours" card with a "Resume for now" button requiring a click.
 
-- [ ] **S6.3 Sleeping and paused UI**
+- [x] **S6.3 Sleeping and paused UI**
   - Do: bubble dot colors (green active, amber preroll, grey sleeping/paused). A "Pause Blue" control in the bubble menu and Settings sets `paused:true`; while paused all gate decisions deny and the UI says so. "Resume" clears it.
   - Verify: pause then try Ask Blue: it replies "Blue is paused" without calling the model (check the network tab).
 
-- [ ] **S6.4 Optional check-ins (private, skippable)**
+- [x] **S6.4 Optional check-ins (private, skippable)**
   - Files: `core/features/checkin.ts`.
   - Do: if `checkins` is on, the user can tap "Wellbeing Check-in" on Home (or a scheduled one if enabled). Blue offers practical, non-clinical options: one next step, a 25-minute focus timer, a restart after distraction, or break an overwhelming task into smaller pieces (the model returns 3 to 5 small steps). Nothing is stored except if the user taps "Save"; **never** infer or mention mental-health conditions; **never** show check-in data anywhere else.
   - Verify: the focus timer works; the step breakdown returns small steps; the Privacy panel shows no check-in data category.
