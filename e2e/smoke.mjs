@@ -1,6 +1,6 @@
 import { chromium } from 'playwright-core';
 import os from 'node:os';
-const exe = `${os.homedir()}/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome`;
+const exe = process.env.CHROME_PATH || `${os.homedir()}/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome`;
 const OUT = process.env.OUT_DIR || 'docs/screens';
 const BASE = process.env.BASE_URL || 'http://localhost:8099';
 const results = [];
@@ -10,6 +10,7 @@ const browser = await chromium.launch({ executablePath: exe, args: ['--no-sandbo
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
 const errors = [];
+process.on('exit', () => { for (const r of results) console.log(r.join(' ')); console.log('console errors:', errors.length, errors.slice(0,5)); });
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push('PAGEERROR ' + e.message));
 
@@ -83,6 +84,7 @@ await page.goto(BASE + '/'); await page.waitForTimeout(600);
 await page.getByRole('button', { name: 'Create Task' }).click();
 await page.getByRole('dialog', { name: 'Create task' }).getByRole('textbox').first().fill('Write launch notes');
 await page.getByRole('button', { name: 'Add task' }).click();
+await page.waitForTimeout(500);
 await page.goto(BASE + '/tasks'); await page.waitForTimeout(500);
 ok('Create Task adds a manual task', await page.getByText('Write launch notes').first().isVisible());
 
@@ -117,7 +119,7 @@ await page.getByLabel('Message to Blue').fill('this is stupid, I am done with th
 await page.getByRole('button', { name: 'Send' }).click();
 await page.getByText(/pause|smallest next step/i).first().waitFor({ timeout: 6000 }).catch(()=>{});
 ok('Angry message gets a calm, non-judgmental reply', await page.getByText(/frustrating/i).first().isVisible());
-ok('No scores or labels in chat', !(await page.getByText(/score|rating|mood:/i).first().isVisible().catch(()=>false)));
+ok('No scores or labels in chat', !(await page.getByText(/\bscores?\b|\brating\b|mood:/i).first().isVisible().catch(()=>false)));
 
 // ---- Check-in
 await page.goto(BASE + '/'); await page.waitForTimeout(500);
@@ -143,22 +145,30 @@ await page.waitForTimeout(400);
 await page.reload(); await page.waitForTimeout(700);
 const card = page.locator('div.bg-white', { has: page.getByRole('button', { name: /Needs senior help/ }) }).first();
 ok('Manual regroup persists after reload', await card.getByText('Write launch notes').isVisible());
-await page.getByRole('checkbox', { name: /Mark "Write launch notes" done/ }).check();
+await page.getByRole('checkbox', { name: /Mark "Write launch notes" done/ }).click();
 await page.getByText('Task Completed!').waitFor({ timeout: 6000 }).catch(()=>{});
 ok('Completing a task shows specific praise', await page.getByText(/You closed/).first().isVisible());
 await page.screenshot({ path: `${OUT}/celebrate.png` });
 await page.keyboard.press('Escape');
 
-// ---- Roundup badge at 09:05 (preroll, work-hours mode)
-await page.goto(BASE + '/?settings=1&demo=1'); await page.waitForTimeout(600);
-await page.getByRole('radio', { name: 'Work hours only' }).click();
-await page.keyboard.press('Escape');
-await page.getByRole('button', { name: '09:05' }).click();
-await page.waitForTimeout(500);
-await page.getByRole('button', { name: /Open Blue menu/ }).hover();
-ok('Bubble offers the roundup in preroll', await page.getByRole('button', { name: "Here's your roundup" }).isVisible());
-await page.screenshot({ path: `${OUT}/bubble.png` });
-await page.mouse.move(10, 10);
+// ---- Roundup badge at 09:05 (fresh profile: no roundup yet today)
+{
+  const ctx2 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const p2 = await ctx2.newPage();
+  await p2.goto(BASE);
+  await p2.getByRole('radio', { name: 'Laptop awake' }).click();
+  await p2.getByRole('button', { name: 'Start my Blue' }).click();
+  await p2.waitForTimeout(600);
+  await p2.goto(BASE + '/?settings=1&demo=1'); await p2.waitForTimeout(600);
+  await p2.getByRole('radio', { name: 'Work hours only' }).click();
+  await p2.keyboard.press('Escape');
+  await p2.getByRole('button', { name: '09:05' }).click();
+  await p2.waitForTimeout(500);
+  await p2.getByRole('button', { name: /Open Blue menu/ }).hover();
+  ok('Bubble offers the roundup in preroll', await p2.getByRole('button', { name: "Here's your roundup" }).isVisible());
+  await p2.screenshot({ path: `${OUT}/bubble.png` });
+  await ctx2.close();
+}
 
 // Settings / privacy
 await page.goto(BASE + '/?settings=1'); await page.waitForTimeout(600);

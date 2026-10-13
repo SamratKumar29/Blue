@@ -100,17 +100,14 @@ const ai = new GoogleGenAI({
 - https://developers.google.com/edge/litert-lm/js
 - https://developers.google.com/edge/litert-lm/overview
 
-### 1. Gemma Model Names for Web (confirmed from LiteRT-LM docs)
+### 1. Gemma Model Names for Web (CORRECTED 2026-10-13)
 
-All models are **Gemma 4** variants (the plan.md correctly anticipated this):
+The web build supports only these two files (verified in session 1; the earlier "-gpu" names and the 12B/26B/31B variants were wrong):
 
-- `Gemma 4 E2B` — `gemma-4-E2B-it-gpu.litertlm` (~2B effective params)
-- `Gemma 4 E4B` — `gemma-4-E4B-it-gpu.litertlm` (~4B effective params)
-- `Gemma 4 12B` — `gemma-4-12B-it-gpu.litertlm`
-- `Gemma 4 26B A4B` — `gemma-4-26B-A4B-it-gpu.litertlm` (MoE, ~4B active)
-- `Gemma 4 31B` — `gemma-4-31B-it-gpu.litertlm`
+- `gemma-4-E2B-it-web.litertlm` (default)
+- `gemma-4-E4B-it-web.litertlm`
 
-> ✅ **Plan matches docs**: The plan.md mentioned E2B, E4B, 12B, 26B A4B, 31B — these are confirmed correct.
+Not verified on real WebGPU hardware yet.
 
 ### 2. npm Package for JS API
 
@@ -136,12 +133,7 @@ import { Engine } from "https://cdn.jsdelivr.net/npm/@litert-lm/core/+esm";
 
 ### 5. License Terms
 
-Gemma 4 uses the **Gemma Terms of Use** (not Apache 2.0). Per the license:
-
-- Users may use, fine-tune, and distribute Gemma models
-- Commercial use: allowed under the Gemma Terms of Use
-- Hosting the model file yourself: **allowed** (user can self-host `.litertlm` files or point to HuggingFace)
-- No restriction on embedding in a web app
+UNVERIFIED. Gemma is distributed under Google's Gemma terms; confirm the current terms (commercial use, self-hosting, redistribution) on the model card before relying on them.
 
 ### 6. Browser Requirements
 
@@ -154,7 +146,7 @@ import { Engine } from "@litert-lm/core";
 
 const engine = await Engine.create({
   model:
-    "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-gpu.litertlm",
+    "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm",
 });
 
 const chat = await engine.createConversation();
@@ -165,4 +157,4 @@ for await (const chunk of chat.sendMessageStreaming("Hello")) {
 }
 ```
 
-> **DOCS DIFFER (minor)**: The plan mentions "Gemma 4 31B" but LiteRT-LM docs list 31B as web-compatible. The 31B model would require very high-end GPU with large VRAM — practical only with E2B/E4B for in-browser. We recommend defaulting to E2B for the demo with an option to choose.
+> Default to E2B for the demo; E4B is optional.
