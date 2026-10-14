@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, HelpCircle, Search, Sparkles, ListChecks, Users, MessageSquare, FileText, PenLine, LifeBuoy, PlusSquare, MoreHorizontal, Plus, ChevronRight, Mail, Calendar as CalIcon, Hash } from 'lucide-react';
+import { Bell, HelpCircle, Search, Sparkles, ListChecks, Users, MessageSquare, FileText, PenLine, LifeBuoy, PlusSquare, MoreHorizontal, Plus, ChevronRight, Mail, Calendar as CalIcon, Hash, Newspaper, ClipboardCheck, Clock, CalendarDays } from 'lucide-react';
 import { useBlueStore } from '../store';
 import { useUi } from '../ui';
 import TaskRow from '../components/TaskRow';
@@ -10,6 +10,17 @@ import { useWorkspaceSummary } from '../core/connectors/useWorkspace';
 import { now } from '../core/presence/demoClock';
 import { TEAM } from '../core/features/askSenior';
 import { retrieve } from '../core/features/retrieval';
+
+function useLiveClock(tz: string) {
+  const [t, setT] = useState(now());
+  useEffect(() => {
+    const id = setInterval(() => setT(now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const time = new Intl.DateTimeFormat([], { timeZone: tz, hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(t);
+  const date = new Intl.DateTimeFormat([], { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' }).format(t);
+  return { time, date };
+}
 
 const STATUS = {
   on_track: ['On track', 'text-emerald-600'],
@@ -57,6 +68,10 @@ export default function Home() {
   const { data: ws, loading } = useWorkspaceSummary();
   const [bell, setBell] = useState(false);
 
+  const clock = useLiveClock(settings.timezone);
+  const presenceLabel = presence === 'active' ? 'Active' : presence === 'preroll' ? 'Waking up' : presence === 'sleeping' ? 'Resting' : 'Paused';
+  const presenceColor = presence === 'active' ? 'bg-emerald-500' : presence === 'preroll' ? 'bg-amber-400' : 'bg-slate-400';
+
   const open = tasks.filter((t) => t.status === 'todo');
   const doneToday = tasks.filter((t) => t.completedAt && now().getTime() - new Date(t.completedAt).getTime() < 86_400_000).length;
   const priorities = [...open].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group)).slice(0, 6);
@@ -82,7 +97,28 @@ export default function Home() {
       <section className="bg-sunrise px-4 pb-8 pt-5 sm:px-8">
         <div className="flex items-center justify-between gap-4">
           <SearchBox />
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex items-center gap-3">
+            {/* 4 info sections */}
+            <button onClick={() => openDialog('roundup')} className="hidden sm:flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold text-ink hover:bg-white transition" aria-label="Open roundup">
+              <Newspaper size={15} className="text-blue-500" />
+              <span>Roundup</span>
+              {roundupOffered && <span className="h-2 w-2 rounded-full bg-rose-500" />}
+            </button>
+            <button onClick={() => openDialog('checkin')} className="hidden sm:flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold text-ink hover:bg-white transition" aria-label="Check-ins">
+              <ClipboardCheck size={15} className="text-emerald-500" />
+              <span>Check-ins</span>
+            </button>
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold text-ink" aria-label="Blue status">
+              <span className={`h-2 w-2 rounded-full ${presenceColor}`} />
+              <span>{presenceLabel}</span>
+              <span className="text-muted font-normal">{settings.workStart}–{settings.workEnd}</span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-2 text-xs font-semibold text-ink tabular-nums" aria-label="Live clock">
+              <Clock size={15} className="text-indigo-500" />
+              <span>{clock.time}</span>
+              <span className="text-muted font-normal">{clock.date}</span>
+            </div>
+
             <button onClick={() => setBell(!bell)} aria-label={`Notifications${notices.length ? ` (${notices.length})` : ''}`} aria-expanded={bell} className="relative rounded-full bg-white/70 p-2.5 text-ink hover:bg-white">
               <Bell size={18} />{notices.length > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />}
             </button>
