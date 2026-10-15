@@ -24,10 +24,10 @@ export default function Modal({ title, subtitle, mood = 'happy', onClose, childr
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`flex max-h-[92vh] w-full flex-col overflow-hidden rounded-3xl bg-white shadow-2xl animate-pop ${wide ? 'max-w-3xl' : 'max-w-xl'}`}
+        className={`flex max-h-[92vh] w-full flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#172042] shadow-2xl animate-pop ${wide ? 'max-w-3xl' : 'max-w-xl'}`}
       >
         {!hideHeader && (
-          <div className="flex items-center gap-3 border-b border-slate-100 bg-card-soft px-5 py-3">
+          <div className="flex items-center gap-3 border-b border-slate-100 dark:border-[#1e2d5a] bg-card-soft dark:bg-[#1a2550] px-5 py-3">
             <BlueMascot size={52} mood={mood} />
             <div className="min-w-0 flex-1">
               <h2 className="truncate font-semibold text-ink">{title}</h2>
@@ -37,11 +37,11 @@ export default function Modal({ title, subtitle, mood = 'happy', onClose, childr
           </div>
         )}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6">{children}</div>
-        {footer && <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-3">{footer}</div>}
+        {footer && <div className="flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 dark:border-[#1e2d5a] bg-slate-50/60 dark:bg-[#0f1729]/60 px-5 py-3">{footer}</div>}
       </div>
     </div>
   );
 }
 
 export const btnPrimary = 'rounded-xl bg-blue-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 active:scale-95 transition disabled:opacity-40';
-export const btnGhost = 'rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-slate-50 transition';
+export const btnGhost = 'rounded-xl border border-slate-200 dark:border-[#1e2d5a] bg-white dark:bg-[#172042] px-5 py-2.5 text-sm font-semibold text-ink hover:bg-slate-50 dark:hover:bg-navy-800 transition';

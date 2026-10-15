@@ -25,6 +25,8 @@ export interface Task {
   dependsOn?: string[];
   blocker?: string;
   suggestedHelperId?: string;
+  dueDate?: string;  // relative label from seed data, e.g. "Today", "Tomorrow", "Wed"
+  dueTime?: string;  // e.g. "10:00 AM"
   explanation: Explanation;
   provenance?: Provenance;
   createdAt: string;
@@ -108,6 +110,7 @@ export interface TeamMember {
   role: string;
   expertise: string[];
   timezone: string;
+  avatar?: string;
   /** Self-declared by the teammate and shared by choice. Never inferred. */
   status?: 'on_track' | 'in_progress' | 'needs_help' | 'at_capacity';
 }

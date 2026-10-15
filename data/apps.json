@@ -1,0 +1,182 @@
+[
+  {
+    "id": "app-1",
+    "name": "Demo Workspace",
+    "category": "Pre-configured",
+    "status": "connected",
+    "description": "Simulated local workplace events, messages, emails, and calendar.",
+    "privacyLevel": "Local Sandbox (Read-only)",
+    "lastSync": "Just now"
+  },
+  {
+    "id": "app-2",
+    "name": "Slack Workspace",
+    "category": "Messaging",
+    "status": "available",
+    "description": "Read-only summary of unread channel mentions and team notifications.",
+    "privacyLevel": "Read-only · Gated",
+    "lastSync": "10:24 AM"
+  },
+  {
+    "id": "app-3",
+    "name": "Google Workspace (Gmail)",
+    "category": "Email",
+    "status": "available",
+    "description": "Summarizes incoming high-priority threads. Zero raw emails stored.",
+    "privacyLevel": "Read-only · Gated",
+    "lastSync": "09:42 AM"
+  },
+  {
+    "id": "app-4",
+    "name": "Google Calendar",
+    "category": "Calendar",
+    "status": "available",
+    "description": "Schedule conflict detection and senior meeting slot coordination.",
+    "privacyLevel": "Read-only · Write on Approval",
+    "lastSync": "09:30 AM"
+  },
+  {
+    "id": "app-5",
+    "name": "Codebase & Repositories (GitHub/GitLab)",
+    "category": "Code Repositories",
+    "status": "blocked_by_policy",
+    "description": "Strictly blocked by Blue privacy policy. Codebase access is never permitted.",
+    "privacyLevel": "Permanently Denied 🔒",
+    "lastSync": "Never"
+  },
+  {
+    "id": "app-6",
+    "name": "Screen Capture & Ambient Audio",
+    "category": "Surveillance",
+    "status": "blocked_by_policy",
+    "description": "Strictly blocked by Blue privacy policy. No screen capture or ambient recording.",
+    "privacyLevel": "Permanently Denied 🔒",
+    "lastSync": "Never"
+  },
+  {
+    "id": "app-7",
+    "name": "Figma Design Workspace",
+    "category": "Design",
+    "status": "available",
+    "description": "Read design file comment mentions and component updates.",
+    "privacyLevel": "Read-only",
+    "lastSync": "Yesterday"
+  },
+  {
+    "id": "app-8",
+    "name": "Microsoft Teams",
+    "category": "Messaging",
+    "status": "available",
+    "description": "Alternate communication channel for manager async updates.",
+    "privacyLevel": "Read-only · Gated",
+    "lastSync": "11:09 AM"
+  },
+  {
+    "id": "app-9",
+    "name": "Jira Issue Tracker",
+    "category": "Project Management",
+    "status": "roadmap",
+    "description": "Sync sprint backlog items and blocker dependencies.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-10",
+    "name": "Linear App",
+    "category": "Issue Tracker",
+    "status": "roadmap",
+    "description": "Fast cycle tracking and milestone association.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-11",
+    "name": "Notion Knowledge Base",
+    "category": "Docs",
+    "status": "roadmap",
+    "description": "Retrieve team handbook policies and project specification pages.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-12",
+    "name": "Google Meet",
+    "category": "Conferencing",
+    "status": "available",
+    "description": "Generate meeting links for approved senior help sessions.",
+    "privacyLevel": "Link Generation Only",
+    "lastSync": "Today"
+  },
+  {
+    "id": "app-13",
+    "name": "Zoom Video",
+    "category": "Conferencing",
+    "status": "roadmap",
+    "description": "Alternate video meeting link generation.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-14",
+    "name": "Asana Tasks",
+    "category": "Project Management",
+    "status": "roadmap",
+    "description": "Bi-directional task completion sync (requires write permission).",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-15",
+    "name": "Confluence Wiki",
+    "category": "Docs",
+    "status": "roadmap",
+    "description": "Read-only policy document chunk retrieval.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-16",
+    "name": "PagerDuty",
+    "category": "Operations",
+    "status": "roadmap",
+    "description": "Incident escalation signal intake.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-17",
+    "name": "Miro Whiteboard",
+    "category": "Design",
+    "status": "roadmap",
+    "description": "Brainstorming canvas sticky note digests.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-18",
+    "name": "Trello Boards",
+    "category": "Project Management",
+    "status": "roadmap",
+    "description": "Kanban board lane movement updates.",
+    "privacyLevel": "Roadmap",
+    "lastSync": "Not configured"
+  },
+  {
+    "id": "app-19",
+    "name": "Google Drive Docs",
+    "category": "Storage",
+    "status": "available",
+    "description": "Approved policy documents and project briefs folder.",
+    "privacyLevel": "Read-only",
+    "lastSync": "Today"
+  },
+  {
+    "id": "app-20",
+    "name": "Blue-to-Blue Agent Swarm",
+    "category": "Autonomous AI",
+    "status": "blocked_by_policy",
+    "description": "Strictly disabled in MVP. Blue will never negotiate autonomously with other bots.",
+    "privacyLevel": "Permanently Denied 🔒",
+    "lastSync": "Never"
+  }
+]

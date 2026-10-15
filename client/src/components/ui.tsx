@@ -4,7 +4,7 @@ import { hourInZone } from '../core/presence/workHours';
 
 export function Card({ children, className = '', ...rest }: { children: ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`bg-white rounded-card shadow-card border border-slate-100 ${className}`} {...rest}>
+    <div className={`bg-white dark:bg-[#172042] rounded-card shadow-card border border-slate-100 dark:border-[#1e2d5a] dark:shadow-none ${className}`} {...rest}>
       {children}
     </div>
   );

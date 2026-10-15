@@ -37,7 +37,7 @@ export default function Tasks() {
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); add(); }} className="mb-6 flex gap-3">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Add a task" placeholder="Add a task…" className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm placeholder:text-muted focus:border-blue-500" />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Add a task" placeholder="Add a task…" className="flex-1 rounded-xl border border-slate-200 dark:border-[#1e2d5a] bg-white dark:bg-[#0f1729] px-4 py-2.5 text-sm text-ink placeholder:text-muted focus:border-blue-500" />
         <button type="submit" disabled={!title.trim()} className="btn-primary inline-flex items-center gap-2 disabled:opacity-40"><Plus size={16} /> Add task</button>
       </form>
 

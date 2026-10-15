@@ -10,6 +10,9 @@ import { useWorkspaceSummary } from '../core/connectors/useWorkspace';
 import { now } from '../core/presence/demoClock';
 import { TEAM } from '../core/features/askSenior';
 import { retrieve } from '../core/features/retrieval';
+import messages from '../data/messages.json';
+import emails from '../data/emails.json';
+import calendarEvents from '../data/calendar.json';
 
 function useLiveClock(tz: string) {
   const [t, setT] = useState(now());
@@ -165,22 +168,46 @@ export default function Home() {
         </Card>
 
         <Card className="p-5">
-          <CardHeader icon={<Users size={16} />} title="Team Updates" action={<button onClick={() => nav('/apps')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
+          <CardHeader icon={<Users size={16} />} title="Team Updates" action={<button onClick={() => nav('/chat')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
           {settings.paused ? (
             <EmptyState title="Blue is paused" hint="Nothing is being read. Updates return when you resume Blue." />
           ) : !settings.allowConnectors ? (
             <EmptyState title="No sources connected" hint="Turn on the Demo Workspace to see Slack, Gmail and Calendar updates here." action={<button onClick={() => openSettings('connectors')} className="btn-primary">Open connectors</button>} />
-          ) : loading || !ws ? (
-            <div className="space-y-3"><Skeleton className="h-12" /><Skeleton className="h-12" /><Skeleton className="h-12" /></div>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {ws.slack && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Hash size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Slack</p><p className="text-xs text-muted">{ws.slack.count} new messages</p></div><span className="text-xs text-muted">{ws.slack.time}</span></li>}
-              {ws.gmail && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-500"><Mail size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Gmail</p><p className="text-xs text-muted">{ws.gmail.count} important emails</p></div><span className="text-xs text-muted">{ws.gmail.time}</span></li>}
-              {ws.calendar && <li className="flex items-center gap-3 py-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><CalIcon size={18} /></span><div className="flex-1"><p className="text-sm font-semibold text-ink">Calendar</p><p className="text-xs text-muted">{ws.calendar.title}</p></div><span className="text-xs text-muted">{ws.calendar.time}</span></li>}
-              {!ws.slack && !ws.gmail && !ws.calendar && <li className="py-3 text-sm text-muted">All sources are switched off.</li>}
+              {messages.slice(0, 3).map((m) => (
+                <li key={m.id} className="flex items-center gap-3 py-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Hash size={18} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-ink">{m.from} <span className="font-normal text-muted">in {m.channel}</span></p>
+                    <p className="truncate text-xs text-muted">{m.text}</p>
+                  </div>
+                  <span className="flex-shrink-0 text-xs text-muted">{new Date(m.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </li>
+              ))}
+              {emails.slice(0, 2).map((e) => (
+                <li key={e.id} className="flex items-center gap-3 py-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-500"><Mail size={18} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-ink">{e.subject}</p>
+                    <p className="truncate text-xs text-muted">{e.from}</p>
+                  </div>
+                  <span className="flex-shrink-0 text-xs text-muted">{new Date(e.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </li>
+              ))}
+              {calendarEvents.slice(0, 1).map((c) => (
+                <li key={c.id} className="flex items-center gap-3 py-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><CalIcon size={18} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-ink">{c.title}</p>
+                    <p className="truncate text-xs text-muted">{c.attendees.join(', ')}</p>
+                  </div>
+                  <span className="flex-shrink-0 text-xs text-muted">{new Date(c.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </li>
+              ))}
             </ul>
           )}
-          <p className="mt-2 text-[11px] text-muted">Read-only counts. Message text is never shown or stored.</p>
+          <p className="mt-2 text-[11px] text-muted">Read-only preview. Blue never stores message bodies.</p>
         </Card>
 
         <Card className="flex items-center bg-card-soft p-5">
@@ -219,11 +246,15 @@ export default function Home() {
           <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
             {settings.allowTeamContext ? (
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {[{ id: 'me', name: `${first} (You)`, status: 'on_track' as const }, ...TEAM.filter((m) => ['p3', 'p2', 'p6'].includes(m.id))].map((m) => {
+                {[{ id: 'me', name: `${first} (You)`, status: 'on_track' as const }, ...TEAM].map((m) => {
                   const [label, cls] = STATUS[(m.status ?? 'on_track') as keyof typeof STATUS];
                   return (
                     <li key={m.id} className="flex flex-col items-center text-center">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{initials(m.name)}</span>
+                      {'avatar' in m && m.avatar ? (
+                        <img src={m.avatar} alt={m.name} className="h-12 w-12 rounded-full object-cover" />
+                      ) : (
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{initials(m.name)}</span>
+                      )}
                       <span className="mt-1 text-sm font-medium text-ink">{m.name.split(' ')[0]}</span>
                       <span className={`text-xs font-semibold ${cls}`}>{label}</span>
                     </li>
