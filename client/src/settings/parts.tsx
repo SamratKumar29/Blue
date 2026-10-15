@@ -21,11 +21,11 @@ export function Field({ label, children, hint, htmlFor }: { label: string; child
 }
 
 export const inputCls =
-  'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-ink focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+  'w-full rounded-xl border border-slate-200 dark:border-[#1e2d5a] bg-white dark:bg-[#0f1729] px-3.5 py-2.5 text-sm text-ink focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 
 export function ToggleRow({ title, hint, checked, onChange }: { title: string; hint?: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-3 border-b border-slate-100 last:border-0">
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-slate-100 dark:border-[#1e2d5a] last:border-0">
       <div>
         <p className="text-sm font-medium text-ink">{title}</p>
         {hint && <p className="text-xs text-muted mt-0.5 max-w-sm">{hint}</p>}
@@ -39,7 +39,7 @@ export function Segmented<T extends string>({
   value, options, onChange, label,
 }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-xl bg-slate-100 p-1">
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-xl bg-slate-100 dark:bg-[#0f1729] p-1">
       {options.map((o) => (
         <button
           key={o.value}
@@ -47,7 +47,7 @@ export function Segmented<T extends string>({
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
           className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
-            value === o.value ? 'bg-white text-blue-600 shadow-sm' : 'text-muted hover:text-ink'
+            value === o.value ? 'bg-white dark:bg-navy-800 text-blue-600 shadow-sm' : 'text-muted hover:text-ink'
           }`}
         >
           {o.label}

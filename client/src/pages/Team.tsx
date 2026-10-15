@@ -22,7 +22,11 @@ export default function Team() {
             <li key={m.id}>
               <Card className="flex h-full flex-col p-5">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{m.name.split(' ').map((p) => p[0]).join('')}</span>
+                  {m.avatar ? (
+                    <img src={m.avatar} alt={m.name} className="h-12 w-12 flex-shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">{m.name.split(' ').map((p) => p[0]).join('')}</span>
+                  )}
                   <div className="min-w-0"><p className="font-semibold text-ink">{m.name}</p><p className="text-xs text-muted">{m.role}</p>
                     {showStatus && <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${s[1]}`}>{s[0]} · self-declared</span>}</div>
                 </div>

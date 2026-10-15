@@ -36,8 +36,8 @@ function Modal({ section, setSection, close }: { section: string; setSection: (s
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 backdrop-blur-sm p-4" onMouseDown={(e) => e.target === e.currentTarget && close()}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-label="Settings" className="flex h-[min(720px,92vh)] w-full max-w-[900px] overflow-hidden rounded-2xl bg-white shadow-2xl animate-pop">
-        <nav aria-label="Settings sections" className="hidden sm:flex w-52 flex-shrink-0 flex-col gap-1 border-r border-slate-100 bg-slate-50/60 p-3">
+      <div ref={ref} role="dialog" aria-modal="true" aria-label="Settings" className="flex h-[min(720px,92vh)] w-full max-w-[900px] overflow-hidden rounded-2xl bg-white dark:bg-[#172042] shadow-2xl animate-pop">
+        <nav aria-label="Settings sections" className="hidden sm:flex w-52 flex-shrink-0 flex-col gap-1 border-r border-slate-100 dark:border-[#1e2d5a] bg-slate-50/60 dark:bg-[#0f1729]/60 p-3">
           <div className="flex items-center gap-2 px-2 py-2 mb-1">
             <img src="/blue-small.png" alt="" width={34} />
             <span className="font-semibold text-ink">Settings</span>
@@ -48,7 +48,7 @@ function Modal({ section, setSection, close }: { section: string; setSection: (s
               onClick={() => setSection(id)}
               aria-current={id === active.id ? 'page' : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-left transition-colors ${
-                id === active.id ? 'bg-blue-50 text-blue-600' : 'text-muted hover:bg-white hover:text-ink'
+                id === active.id ? 'bg-blue-50 dark:bg-navy-800 text-blue-600' : 'text-muted hover:bg-white dark:hover:bg-navy-800 hover:text-ink'
               }`}
             >
               <Icon size={16} /> {label}

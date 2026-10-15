@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import type { Settings, Task, Summary, AuditEntry, OutboxItem } from './core/types';
+import type { Settings, Task, Summary, AuditEntry, OutboxItem, Effort, TaskGroup, SourceCategory } from './core/types';
 import type { ActionRequest } from './core/policy/gate';
 import { get, put, getAll, del, clearAll } from './core/memory/db';
 import { listAudit, clearAudit } from './core/memory/audit';
+import seedTasks from './data/tasks.json';
 
 export const DEFAULT_SETTINGS: Settings = {
   name: 'Alex Johnson',
@@ -55,14 +56,43 @@ export interface PendingApproval {
 
 export type MemoryCategory = 'tasks' | 'summaries' | 'preferences' | 'audit';
 
+function parseDuration(d: string): number {
+  let min = 0;
+  const h = d.match(/(\d+)\s*h/);
+  const m = d.match(/(\d+)\s*m/);
+  if (h) min += parseInt(h[1], 10) * 60;
+  if (m) min += parseInt(m[1], 10);
+  return min || 30;
+}
+
+const EFFORT_MAP: Record<string, Effort> = { easy: 'easy', medium: 'medium', hard: 'deep' };
+const URGENCY_MAP: Record<string, 'low' | 'med' | 'high'> = { easy_wins: 'low', next_up: 'med', needs_senior: 'high' };
+const SOURCE_MAP: Record<string, SourceCategory> = { chat: 'chat', email: 'email', calendar: 'calendar', policy: 'policy', manual: 'manual' };
+
 function manualSeed(): Task[] {
   const now = new Date().toISOString();
-  const manual = { sourceCategory: 'manual' as const, confidence: 1, reason: 'Sample task you can edit or delete.' };
-  return [
-    { id: 'seed_1', title: 'Review design mockup feedback', project: 'Atlas', estimateMin: 15, effort: 'easy', group: 'easy_wins', urgency: 'low', status: 'todo', explanation: manual, provenance: { source: 'manual', ref: 'seed_1' }, createdAt: now },
-    { id: 'seed_2', title: 'Draft API integration spec', project: 'Atlas', estimateMin: 60, effort: 'medium', group: 'next_up', urgency: 'med', status: 'todo', explanation: manual, provenance: { source: 'manual', ref: 'seed_2' }, createdAt: now },
-    { id: 'seed_3', title: 'Sprint planning prep (a senior can help)', project: 'Atlas', estimateMin: 90, effort: 'deep', group: 'needs_senior', urgency: 'med', status: 'todo', explanation: manual, provenance: { source: 'manual', ref: 'seed_3' }, createdAt: now },
-  ];
+  return (seedTasks as Array<Record<string, unknown>>).map((raw) => ({
+    id: raw.id as string,
+    title: raw.title as string,
+    project: raw.project as string,
+    estimateMin: parseDuration((raw.duration as string) ?? '30m'),
+    effort: EFFORT_MAP[(raw.priority as string)] ?? 'medium',
+    group: (raw.group as TaskGroup) ?? 'next_up',
+    urgency: URGENCY_MAP[(raw.group as string)] ?? 'med',
+    status: (raw.completed ? 'done' : 'todo') as Task['status'],
+    blocker: (raw.blocker as string) ?? undefined,
+    suggestedHelperId: (raw.suggestedHelperId as string) ?? undefined,
+    dueDate: (raw.dueDate as string) ?? undefined,
+    dueTime: (raw.dueTime as string) ?? undefined,
+    explanation: {
+      sourceCategory: SOURCE_MAP[((raw.whyExplanation as Record<string, unknown>)?.sourceCategory as string)] ?? 'manual',
+      confidence: ((raw.whyExplanation as Record<string, unknown>)?.confidence as number) ?? 1,
+      reason: ((raw.whyExplanation as Record<string, unknown>)?.reason as string) ?? '',
+    },
+    provenance: { source: 'manual' as const, ref: raw.id as string },
+    createdAt: now,
+    completedAt: raw.completed ? now : undefined,
+  }));
 }
 
 function uid(prefix: string) {
@@ -124,9 +154,25 @@ export const useBlueStore = create<BlueStore>((set, getStore) => ({
 
       let meta = { ...DEFAULT_META, ...((await get<Meta>('meta', 'app')) ?? {}) };
       let tasks = await getAll<Task>('tasks');
-      if (!meta.seeded && tasks.length === 0) {
-        tasks = manualSeed();
-        for (const t of tasks) await put<Task>('tasks', t.id, t);
+      const seed = manualSeed();
+      // Backfill due fields on tasks stored before dueDate/dueTime existed.
+      const seedById = new Map(seed.map((t) => [t.id, t]));
+      tasks = await Promise.all(tasks.map(async (t) => {
+        const s = seedById.get(t.id);
+        if (s && (!t.dueDate || !t.dueTime)) {
+          const patched = { ...t, dueDate: t.dueDate ?? s.dueDate, dueTime: t.dueTime ?? s.dueTime };
+          await put<Task>('tasks', t.id, patched);
+          return patched;
+        }
+        return t;
+      }));
+      const existingIds = new Set(tasks.map((t) => t.id));
+      const missing = seed.filter((t) => !existingIds.has(t.id));
+      if (missing.length > 0) {
+        for (const t of missing) await put<Task>('tasks', t.id, t);
+        tasks = [...tasks, ...missing];
+      }
+      if (!meta.seeded) {
         meta = { ...meta, seeded: true };
         await put('meta', 'app', meta);
       }
