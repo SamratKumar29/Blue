@@ -90,6 +90,8 @@ const ai = new GoogleGenAI({
 
 **`gemini-3.8-flash`** — "Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows." (New Stable as of Oct 2026)
 
+> **Note (2026-10-16):** `gemini-2.5-flash` returns 404 for new users. Use `gemini-3.8-flash` (recommended).
+
 ---
 
 ## Gemma Web Runtime (LiteRT-LM) — S0.6

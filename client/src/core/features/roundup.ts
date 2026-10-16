@@ -35,8 +35,10 @@ export async function generateRoundup(): Promise<RoundupResult> {
   const facts = await toActionableFacts(approved);
   const existing = useBlueStore.getState().tasks;
   const fresh = await triage(facts, existing.filter((t) => t.provenance?.source === 'manual'));
-  const tasks = mergeTasks(existing, fresh);
-  await store.replaceTasks(tasks);
+  const merged = mergeTasks(existing, fresh);
+  await store.replaceTasks(merged);
+  // Seeded/manual tasks may carry helper ids; never surface them without team context.
+  const tasks = store.settings.allowTeamContext ? merged : merged.map(({ suggestedHelperId: _, ...t }) => t);
 
   const open = tasks.filter((t) => t.status === 'todo');
   const out = await aiJson(

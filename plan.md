@@ -326,7 +326,7 @@ blue/
 
 ## 4. PROGRESS TRACKER (update after every step)
 
-**CURRENT POINTER:** `S8.1` (S4.2/S4.5 blocked on GEMINI_API_KEY; S7 blocked on GCP project ID)
+**CURRENT POINTER:** `S0.4` (GCP project exists; needs gcloud on Windows + services enabled) → then `S4.2`/`S4.5` live Gemini test → `S7.1`. Phase 8 work may proceed in parallel; Phase 9 only after Phases 0-8 gates pass.
 
 **Schedule (target, adjust if needed):**
 | Day | Date | Phases |
@@ -341,7 +341,7 @@ blue/
 
 **Phase gates:**
 
-- [x] Phase 0 gate passed
+- [ ] Phase 0 gate passed (S0.4 still blocked; was ticked prematurely, unticked 2026-10-16)
 - [x] Phase 1 gate passed
 - [x] Phase 2 gate passed
 - [x] Phase 3 gate passed
@@ -365,9 +365,15 @@ blue/
 2026-10-12 | S1.1-S1.9 | Antigravity | Client + server scaffolded, Tailwind tokens, Blue mascot SVG, Home dashboard, Bubble, 8-section Settings modal, static routes, screenshots captured (docs/screens/)
 2026-10-12 | S2-S6 | Claude | built; see docs/HANDOFF.md
 2026-10-13 | verify | Claude | tsc, build, vitest 37 pass; e2e/smoke.mjs all checks pass, 0 console errors (fixed test races + bubble test uses fresh profile); verified-apis.md Gemma corrected
+2026-10-16 | audit | CoCo (claude-opus-5-5) | audited Phases 0-9 vs repo; unticked Phase 0 gate (S0.4 blocked). Windows checkout: npm install in client+server; tsc + both builds pass
+2026-10-16 | fix | CoCo | pipeline.test.ts regressions after tasks.json/team.json reseed: roundup now strips suggestedHelperId when team context is off (real privacy bug); test expects team-4 (DevOps). vitest 37/37 pass
+2026-10-16 | S1.9 | CoCo | Lighthouse a11y on / (vite preview, Edge headless) = 96; failing audits: color-contrast, label-content-name-mismatch (for S8.4)
+2026-10-16 | sidebar.md/calendar.md | CoCo | sidebar: roundup mascot + sparkle, theme toggle, shortcuts modal, profile footer, active bar; global keyboard shortcuts in App.tsx; Calendar page already matched calendar.md
+2026-10-16 | .gitignore | CoCo | removed pasted tool-call garbage; .env still ignored and never committed
+2026-10-16 | S4.2 live test | CoCo | API key authenticates. gemini-2.5-flash -> 404 (retired for new users); gemini-3.8-flash -> 402 "prepayment credits depleted" (AI Studio billing, not GCP trial). Next: Vertex mode (USE_VERTEX=true) once gcloud ADC is set up
 ```
 
-**Blockers:** S4.2/S4.5 need GEMINI_API_KEY in server/.env for a live run (Phase 4/5 gates stay open). S7 needs GCP project ID. S4.6 Local Gemma unverified on real WebGPU. S0.4 GCP project not yet set up (user will provide when ready); continue Phases 1-3 without cloud.
+**Blockers:** S4.2/S4.5 live run fails: AI Studio key has no prepaid credits (402); plan: switch to Vertex AI using the GCP trial project, which needs gcloud installed on Windows + `gcloud auth application-default login`. Also set GEMINI_MODEL=gemini-3.8-flash. S7 needs gcloud too. S4.6 Local Gemma unverified on real WebGPU.
 
 **Decisions log** (anything the user decided later):
 
@@ -376,6 +382,9 @@ blue/
 - 2026-10-12: gcloud: installed to ~/google-cloud-sdk via standalone installer (no sudo needed).
 - 2026-10-12: Gemma local model: default to E2B (smallest, most practical in browser); user can choose model file.
 - 2026-10-12: GCP project ID: TBD (user setting up).
+- 2026-10-16: User created GCP project (free trial credits) and a new Gemini API key; values in root `.env` (gitignored).
+- 2026-10-16: sidebar.md / calendar.md are teammate design notes from another codebase; implement their visual intent in Blue, not their file structure.
+- 2026-10-16: Phase 9 starts only after all earlier phase gates pass.
 
 ---
 
