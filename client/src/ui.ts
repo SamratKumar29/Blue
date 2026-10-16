@@ -22,6 +22,8 @@ interface UiState {
   setRoundupOffered: (v: boolean) => void;
   setReminder: (m: string | null) => void;
   setRestOverride: (v: boolean) => void;
+  shortcutsOpen: boolean;
+  setShortcutsOpen: (v: boolean) => void;
   settingsOpen: boolean;
   settingsSection: string;
   dialog: { kind: DialogKind; payload?: Record<string, unknown> } | null;
@@ -40,6 +42,8 @@ export const useUi = create<UiState>((set) => ({
   setRoundupOffered: (roundupOffered) => set({ roundupOffered }),
   setReminder: (reminder) => set({ reminder }),
   setRestOverride: (restOverride) => set({ restOverride }),
+  shortcutsOpen: false,
+  setShortcutsOpen: (shortcutsOpen) => set({ shortcutsOpen }),
   settingsOpen: typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('settings') === '1',
   settingsSection: 'general',
   dialog: null,

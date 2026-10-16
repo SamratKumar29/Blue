@@ -10,6 +10,14 @@ export function applyAppearance() {
   }
 }
 
+export function toggleTheme(): 'light' | 'dark' {
+  const next = localStorage.getItem('blue-theme') === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('blue-theme', next);
+  applyAppearance();
+  window.dispatchEvent(new Event('blue-theme-change'));
+  return next;
+}
+
 export default function Appearance() {
   const [compact, setCompact] = useState(localStorage.getItem('blue-compact') === '1');
   const [theme, setTheme] = useState<'light' | 'dark'>((localStorage.getItem('blue-theme') as 'light' | 'dark') ?? 'light');

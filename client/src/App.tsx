@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
+import { useUi } from './ui';
 import Bubble from './components/Bubble';
 import SettingsModal from './settings/SettingsModal';
 import ApprovalDialog from './components/ApprovalDialog';
@@ -8,7 +10,7 @@ import PermissionCenter from './components/PermissionCenter';
 import DialogHost from './components/DialogHost';
 import DemoClockPanel from './components/DemoClockPanel';
 import { startScheduler } from './core/presence/scheduler';
-import { applyAppearance } from './settings/Appearance';
+import { applyAppearance, toggleTheme } from './settings/Appearance';
 import { useBlueStore } from './store';
 import Home from './pages/Home';
 import Chat from './pages/Chat';
@@ -24,6 +26,7 @@ export default function App() {
   const initialized = useBlueStore((s) => s.initialized);
   const onboarded = useBlueStore((s) => s.meta.onboarded);
   const offlineDemo = useBlueStore((s) => s.offlineDemo);
+  const navigate = useNavigate();
 
   useEffect(() => {
     applyAppearance();
@@ -34,6 +37,33 @@ export default function App() {
     if (!initialized || !onboarded) return;
     return startScheduler();
   }, [initialized, onboarded]);
+
+  useEffect(() => {
+    const routes: Record<string, string> = { h: '/', m: '/chat', t: '/tasks', b: '/team', c: '/calendar', f: '/files', a: '/apps', o: '/outbox' };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))) return;
+      const ui = useUi.getState();
+      if (e.key === 'Escape') {
+        if (ui.shortcutsOpen) ui.setShortcutsOpen(false);
+        else if (ui.dialog) ui.closeDialog();
+        else if (ui.settingsOpen) ui.closeSettings();
+        return;
+      }
+      // Don't navigate underneath an open dialog or before onboarding.
+      if (ui.dialog || ui.settingsOpen || !useBlueStore.getState().meta.onboarded) return;
+      if (e.key === '?') { e.preventDefault(); ui.setShortcutsOpen(!ui.shortcutsOpen); return; }
+      if (ui.shortcutsOpen) return;
+      const k = e.key.toLowerCase();
+      if (routes[k]) { e.preventDefault(); navigate(routes[k]); }
+      else if (k === 'r') { e.preventDefault(); ui.openDialog('roundup'); }
+      else if (k === 's') { e.preventDefault(); ui.openSettings(); }
+      else if (k === 'd') { e.preventDefault(); toggleTheme(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navigate]);
 
   if (!initialized) {
     return <div className="flex h-screen items-center justify-center bg-sunrise"><img src="/blue-small.png" alt="Loading Blue" width={96} className="animate-float" /></div>;
@@ -65,6 +95,7 @@ export default function App() {
       <SettingsModal />
       <ApprovalDialog />
       <DemoClockPanel />
+      <KeyboardShortcutsModal />
       {!onboarded && <PermissionCenter />}
     </div>
   );

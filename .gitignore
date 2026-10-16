@@ -33,11 +33,6 @@ Thumbs.db
 # WSL / Windows file-transfer metadata
 *:Zone.Identifier
 *.Zone.Identifier
-</parameter>
-<task_progress>
-- [x] Review current .gitignore
-- [x] Check git status for files that should be ignored (node_modules, dist, .env, etc.)
-- [x] Update .gitignore
-- [ ] Verify with git status
-</task_progress>
-</write_to_file>client/public/litert-wasm
+
+# LiteRT WASM runtime (copied at build time)
+client/public/litert-wasm

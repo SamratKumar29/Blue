@@ -21,14 +21,16 @@ describe('privacy pipeline (offline demo provider)', () => {
   });
 
   it('triages the sample workspace into the three groups with explanations', async () => {
-    const { tasks } = await generateRoundup();
+    const { tasks: all } = await generateRoundup();
+    // Seeded manual tasks are merged in; bound only what triage produced from sources.
+    const tasks = all.filter((t) => t.provenance?.source !== 'manual');
     expect(tasks.length).toBeGreaterThanOrEqual(6);
     expect(tasks.length).toBeLessThanOrEqual(12);
     for (const g of ['easy_wins', 'next_up', 'needs_senior']) expect(tasks.some((t) => t.group === g)).toBe(true);
 
     const prod = tasks.find((t) => /production bug/i.test(t.title))!;
     expect(prod.group).toBe('needs_senior');
-    expect(prod.suggestedHelperId).toBe('p2');
+    expect(prod.suggestedHelperId).toBe('team-4'); // David Kim, DevOps & Infrastructure Lead
     expect(prod.explanation.reason.length).toBeGreaterThan(5);
     expect(prod.explanation.confidence).toBeGreaterThan(0);
     expect(prod.explanation.confidence).toBeLessThanOrEqual(1);

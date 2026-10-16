@@ -56,6 +56,15 @@
     @apply bg-navy-800 text-white;
   }
 
+  .sidebar-item { position: relative; }
+  .sidebar-item::before {
+    content: '';
+    @apply absolute left-0 top-1/2 h-0 w-1 -translate-y-1/2 rounded-r-full bg-blue-400 transition-all duration-200;
+  }
+  .sidebar-item.active::before {
+    @apply h-7;
+  }
+
   /* Smooth transitions, respectful of prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     * {
