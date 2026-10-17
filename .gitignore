@@ -36,3 +36,6 @@ Thumbs.db
 
 # LiteRT WASM runtime (copied at build time)
 client/public/litert-wasm
+
+# Local agent/session files
+.cortex/
