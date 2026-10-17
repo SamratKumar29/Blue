@@ -326,7 +326,7 @@ blue/
 
 ## 4. PROGRESS TRACKER (update after every step)
 
-**CURRENT POINTER:** `S0.4` (GCP project exists; needs gcloud on Windows + services enabled) → then `S4.2`/`S4.5` live Gemini test → `S7.1`. Phase 8 work may proceed in parallel; Phase 9 only after Phases 0-8 gates pass.
+**CURRENT POINTER:** `S4.5` (browser check of cloud mode on the live URL) → `S7.4` (user sets budget alert) → `S7.5` browser smoke test. Live URL: https://blue-43899504636.us-central1.run.app
 
 **Schedule (target, adjust if needed):**
 | Day | Date | Phases |
@@ -341,7 +341,7 @@ blue/
 
 **Phase gates:**
 
-- [ ] Phase 0 gate passed (S0.4 still blocked; was ticked prematurely, unticked 2026-10-16)
+- [x] Phase 0 gate passed
 - [x] Phase 1 gate passed
 - [x] Phase 2 gate passed
 - [x] Phase 3 gate passed
@@ -371,9 +371,13 @@ blue/
 2026-10-16 | sidebar.md/calendar.md | CoCo | sidebar: roundup mascot + sparkle, theme toggle, shortcuts modal, profile footer, active bar; global keyboard shortcuts in App.tsx; Calendar page already matched calendar.md
 2026-10-16 | .gitignore | CoCo | removed pasted tool-call garbage; .env still ignored and never committed
 2026-10-16 | S4.2 live test | CoCo | API key authenticates. gemini-2.5-flash -> 404 (retired for new users); gemini-3.8-flash -> 402 "prepayment credits depleted" (AI Studio billing, not GCP trial). Next: Vertex mode (USE_VERTEX=true) once gcloud ADC is set up
+2026-10-17 | S0.4 | CoCo | project ai-builder-cup-2026-511717, billing enabled, run/aiplatform/cloudbuild/artifactregistry/secretmanager already enabled
+2026-10-17 | S4.2 | CoCo | Vertex mode (location=global) live: gemini-3.8-flash/3.7/3.5 all respond; /api/ai/complete returns schema JSON; privacy filter 422 works
+2026-10-17 | S7.1-S7.3 | CoCo | Dockerfile + .dockerignore added; SA blue-run (roles/aiplatform.user only); deployed us-central1, max-instances 2, no API key; https://blue-43899504636.us-central1.run.app health ok, UI 200, live Gemini ok
+2026-10-17 | S7.4 partial | CoCo | Cloud Run logs show method/path/status/ms only, no bodies; budget alert pending user
 ```
 
-**Blockers:** S4.2/S4.5 live run fails: AI Studio key has no prepaid credits (402); plan: switch to Vertex AI using the GCP trial project, which needs gcloud installed on Windows + `gcloud auth application-default login`. Also set GEMINI_MODEL=gemini-3.8-flash. S7 needs gcloud too. S4.6 Local Gemma unverified on real WebGPU.
+**Blockers:** S7.4 budget alert must be set by the user (Billing > Budgets & alerts). S4.6 Local Gemma unverified on real WebGPU.
 
 **Decisions log** (anything the user decided later):
 
@@ -385,6 +389,7 @@ blue/
 - 2026-10-16: User created GCP project (free trial credits) and a new Gemini API key; values in root `.env` (gitignored).
 - 2026-10-16: sidebar.md / calendar.md are teammate design notes from another codebase; implement their visual intent in Blue, not their file structure.
 - 2026-10-16: Phase 9 starts only after all earlier phase gates pass.
+- 2026-10-17: Stay on Cloud Run + Vertex (not AI Studio import). GCP project ai-builder-cup-2026-511717, region us-central1, model gemini-3.8-flash. URL https://blue-43899504636.us-central1.run.app
 
 ---
 
@@ -405,8 +410,7 @@ blue/
   - Create `.env.example` containing only placeholder names (no values): `PORT=8080`, `GEMINI_MODEL=`, `GEMINI_API_KEY=`, `USE_VERTEX=false`, `GOOGLE_CLOUD_PROJECT=`, `GOOGLE_CLOUD_LOCATION=`.
   - Verify: `git status` shows the files; `.gitignore` contains `.env`.
 
-- [!] **S0.4 Google Cloud project and billing (human step)**
-  - Blocked: GCP project ID not yet provided. Will continue Phases 1-3, block Phase 7 until done.
+- [x] **S0.4 Google Cloud project and billing (human step)**
   - Do: ask the user for the GCP project ID and whether billing/credits are active. Write the project ID in the Decisions log. Then run: `gcloud config set project <PROJECT_ID>` and `gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com secretmanager.googleapis.com`.
   - Verify: `gcloud services list --enabled | grep -E "run|aiplatform"` shows both.
   - Fallback if the user has no project yet: continue Phases 1 to 3 (they need no cloud). Block Phase 4 until done.
@@ -692,7 +696,7 @@ export async function verifyApproval(
   - Rule: **never log request bodies**. Log only method, path, status, duration.
   - Verify: `npm run dev` then `curl localhost:8080/api/health` returns `{"ok":true}`.
 
-- [!] **S4.2 Gemini wrapper**
+- [x] **S4.2 Gemini wrapper**
   - Files: `server/src/gemini.ts`.
   - Do: using the SDK and call shape recorded in `docs/verified-apis.md` (S0.5): create the client once. If `USE_VERTEX==='true'` use Vertex mode with `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` (no API key; Cloud Run's service account provides credentials). Otherwise use `GEMINI_API_KEY` (local dev only). Export `complete({ system, prompt, jsonSchema? })` returning `{ text }`. When `jsonSchema` is given, request JSON output with that schema. Model id comes from `process.env.GEMINI_MODEL`; throw a clear error if it is missing.
   - Verify: create `server/.env` (git-ignored) with a dev key and model id, run `npx tsx -e "import('./src/gemini').then(m=>m.complete({system:'Reply with one word.',prompt:'Say hi'}).then(console.log))"` and see a short reply.
@@ -843,7 +847,7 @@ General rules for all prompts (put them in `core/ai/prompts.ts` as named constan
 
 # PHASE 7 — Containerize and deploy to Cloud Run (Day 5 morning)
 
-- [ ] **S7.1 Dockerfile (multi-stage)**
+- [x] **S7.1 Dockerfile (multi-stage)**
   - Files: `Dockerfile`, `.dockerignore`.
   - Do:
 
@@ -880,11 +884,11 @@ CMD ["node","dist/index.js"]
 
 - Verify: `docker build -t blue .` then `docker run -p 8080:8080 -e GEMINI_API_KEY=... -e GEMINI_MODEL=... blue` and open http://localhost:8080 . If Docker is not installed, skip the local run and verify in S7.3 instead.
 
-- [ ] **S7.2 Service account and secrets**
+- [x] **S7.2 Service account and secrets**
   - Do: (a) Use Vertex mode on Cloud Run: grant the Cloud Run runtime service account the role `roles/aiplatform.user`: `gcloud projects add-iam-policy-binding <PROJECT_ID> --member="serviceAccount:<RUNTIME_SA>" --role="roles/aiplatform.user"` (find the SA with `gcloud run services describe` after first deploy, or use the default compute service account). (b) No API key is needed in production. If the user prefers an AI Studio key, store it in Secret Manager (`gcloud secrets create gemini-key --data-file=-`) and mount it as an env var; do not paste keys into commands that get saved in history.
   - Verify: `gcloud projects get-iam-policy <PROJECT_ID> --flatten="bindings[].members" --filter="bindings.role:roles/aiplatform.user" --format="value(bindings.members)"` lists the service account.
 
-- [ ] **S7.3 Deploy**
+- [x] **S7.3 Deploy**
   - Do: `gcloud run deploy blue --source . --region <REGION> --allow-unauthenticated --set-env-vars USE_VERTEX=true,GOOGLE_CLOUD_PROJECT=<PROJECT_ID>,GOOGLE_CLOUD_LOCATION=<REGION>,GEMINI_MODEL=<MODEL_ID_FROM_docs/verified-apis.md> --memory 512Mi --max-instances 3`. Pick a region close to Singapore/India that supports the chosen model (check docs; e.g. asia-southeast1 or asia-south1, otherwise `us-central1`). Copy the service URL into `README.md` and the Decisions log.
   - Verify: `curl <URL>/api/health` returns ok; opening the URL shows the UI; in Cloud mode the "Test AI" or a roundup returns real Gemini output.
 
