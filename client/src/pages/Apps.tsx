@@ -4,7 +4,7 @@ import { useBlueStore } from '../store';
 import { useUi } from '../ui';
 import { Card } from '../components/ui';
 import { useGoogle, disconnectGoogle } from '../core/connectors/google';
-import { GoogleConnectButton } from './Inbox';
+import { GoogleConnectPanel } from './Inbox';
 
 export default function Apps() {
   const on = useBlueStore((s) => s.settings.allowConnectors);
@@ -46,8 +46,8 @@ export default function Apps() {
               </div>
             ) : on ? (
               <div className="mt-4">
-                <GoogleConnectButton className="w-full justify-center" />
-                <p className="mt-2 text-center text-[11px] text-muted">Access lasts for this tab only. Nothing is stored or sent.</p>
+                <GoogleConnectPanel compact />
+                <p className="mt-2 text-[11px] text-muted">Access lasts for this tab only. Mail is never stored, sent or changed.</p>
               </div>
             ) : (
               <p className="mt-4 text-xs text-amber-700">Turn on <button onClick={() => openSettings('privacy')} className="font-semibold underline">Allow connectors</button> to connect.</p>

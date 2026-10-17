@@ -29,10 +29,12 @@ interface GoogleState {
   events: CalEvent[];
   loading: boolean;
   error: string | null;
+  /** Human-readable step shown while connecting/refreshing; null when idle. */
+  progress: string | null;
 }
 
 export const useGoogle = create<GoogleState>(() => ({
-  token: null, expiresAt: 0, email: null, scopes: [], mail: [], events: [], loading: false, error: null,
+  token: null, expiresAt: 0, email: null, scopes: [], mail: [], events: [], loading: false, error: null, progress: null,
 }));
 
 export const hasGmail = () => isConnected() && useGoogle.getState().scopes.includes(GMAIL_SCOPE);
@@ -42,13 +44,26 @@ export function isConnected() {
   return Boolean(s.token) && Date.now() < s.expiresAt;
 }
 
-let clientIdPromise: Promise<string | null> | null = null;
-export function getClientId(): Promise<string | null> {
-  clientIdPromise ??= fetch('/api/config')
+// A tester can paste their own OAuth Web client ID at runtime. It is a public identifier (not a secret),
+// so it is kept in this browser's localStorage. The server-configured ID is used as a fallback.
+const CLIENT_ID_KEY = 'blue-google-client-id';
+export const CLIENT_ID_RE = /^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/;
+export const getLocalClientId = () => localStorage.getItem(CLIENT_ID_KEY) ?? '';
+export function setLocalClientId(id: string) {
+  const v = id.trim();
+  if (v) localStorage.setItem(CLIENT_ID_KEY, v); else localStorage.removeItem(CLIENT_ID_KEY);
+}
+
+let serverIdPromise: Promise<string | null> | null = null;
+export function getServerClientId(): Promise<string | null> {
+  serverIdPromise ??= fetch('/api/config')
     .then((r) => (r.ok ? r.json() : null))
     .then((c: { googleClientId?: string | null } | null) => c?.googleClientId || null)
     .catch(() => null);
-  return clientIdPromise;
+  return serverIdPromise;
+}
+export async function getClientId(): Promise<string | null> {
+  return getLocalClientId() || (await getServerClientId());
 }
 
 let gisPromise: Promise<void> | null = null;
@@ -65,20 +80,42 @@ function loadGis(): Promise<void> {
   return gisPromise;
 }
 
+/** Load Google's sign-in script early so the consent popup opens straight from the click (avoids popup blockers). */
+export const preloadGoogle = () => loadGis().catch(() => undefined);
+
 /** Opens Google's consent popup for read-only Gmail and Calendar access. */
 export async function connectGoogle(): Promise<void> {
   const gate = await guard({ type: 'read_source', source: 'google-workspace', effect: 'Read Gmail and Calendar (read-only)' }, () => true);
   if (!gate.ok) throw new Error(gate.reason);
   const clientId = await getClientId();
-  if (!clientId) throw new Error('Google sign-in is not configured on the server yet.');
-  await loadGis();
+  if (!clientId) throw new Error('Add your OAuth Client ID first.');
+  if (!CLIENT_ID_RE.test(clientId)) throw new Error('That does not look like an OAuth Web client ID (…apps.googleusercontent.com).');
+  const step = (progress: string | null) => useGoogle.setState({ progress });
+  try {
+    step('Loading Google sign-in…');
+    await loadGis();
+    step('Waiting for you to approve access in the Google popup…');
+    await authorize(clientId);
+    step('Checking your account…');
+    const me = await api<{ email?: string }>('https://www.googleapis.com/oauth2/v3/userinfo').catch(() => ({ email: undefined }));
+    useGoogle.setState({ email: me.email ?? null });
+    await refreshGoogle();
+  } finally {
+    step(null);
+  }
+}
+
+async function authorize(clientId: string): Promise<void> {
   const oauth2 = (window as GisWindow).google!.accounts.oauth2;
   const resp = await new Promise<TokenResponse>((resolve, reject) => {
     const client = oauth2.initTokenClient({
       client_id: clientId,
       scope: `${GMAIL_SCOPE} ${CAL_SCOPE} openid email`,
       callback: resolve,
-      error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? 'Sign-in was cancelled.' : e.message || 'Google sign-in failed.')),
+      error_callback: (e) => reject(new Error(
+        e.type === 'popup_closed' ? 'Sign-in was cancelled.'
+        : e.type === 'popup_failed_to_open' ? 'The Google popup was blocked. Allow popups for this site and try again.'
+        : e.message || 'Google sign-in failed. Check that this site is an Authorized JavaScript origin.')),
     });
     client.requestAccessToken({ prompt: 'consent' });
   });
@@ -89,9 +126,6 @@ export async function connectGoogle(): Promise<void> {
     scopes: (resp.scope ?? '').split(' '),
     error: null,
   });
-  const me = await api<{ email?: string }>('https://www.googleapis.com/oauth2/v3/userinfo').catch(() => ({ email: undefined }));
-  useGoogle.setState({ email: me.email ?? null });
-  await refreshGoogle();
 }
 
 export function disconnectGoogle() {
@@ -112,16 +146,19 @@ async function api<T>(url: string): Promise<T> {
 const clean = (s: string) => (isCodebaseContent(s) ? '[hidden: looks like code]' : redactSecrets(s));
 
 /** Lists mail matching a Gmail search query (default: last 48 hours). Metadata + snippet only. */
-export async function fetchMail(query = 'newer_than:2d', max = 25): Promise<MailItem[]> {
+export async function fetchMail(query = 'newer_than:2d', max = 25, onProgress?: (done: number, total: number) => void): Promise<MailItem[]> {
   if (!hasGmail()) return [];
   const list = await api<{ messages?: { id: string }[] }>(
     `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${max}&q=${encodeURIComponent(query)}`,
   );
   const ids = (list.messages ?? []).map((m) => m.id);
+  let done = 0;
+  const report = () => onProgress?.(++done, ids.length);
   const items = await Promise.all(ids.map(async (id) => {
     const m = await api<{ id: string; snippet?: string; labelIds?: string[]; payload?: { headers?: { name: string; value: string }[] } }>(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
     );
+    report();
     const h = (n: string) => m.payload?.headers?.find((x) => x.name.toLowerCase() === n.toLowerCase())?.value ?? '';
     return {
       id: m.id,
@@ -155,12 +192,16 @@ export async function fetchEvents(): Promise<CalEvent[]> {
 }
 
 export async function refreshGoogle(): Promise<void> {
+  const step = (progress: string | null) => useGoogle.setState({ progress });
   useGoogle.setState({ loading: true, error: null });
   try {
-    const [mail, events] = await Promise.all([fetchMail(), fetchEvents()]);
-    useGoogle.setState({ mail, events, loading: false });
+    step('Reading emails from the last 48 hours…');
+    const mail = await fetchMail('newer_than:2d', 50, (d, t) => step(`Reading emails from the last 48 hours… ${d}/${t}`));
+    step(`Found ${mail.length} email${mail.length === 1 ? '' : 's'}. Reading your calendar…`);
+    const events = await fetchEvents();
+    useGoogle.setState({ mail, events, loading: false, progress: null });
   } catch (e) {
-    useGoogle.setState({ loading: false, error: e instanceof Error ? e.message : 'Could not load Google data.' });
+    useGoogle.setState({ loading: false, progress: null, error: e instanceof Error ? e.message : 'Could not load Google data.' });
   }
 }
 

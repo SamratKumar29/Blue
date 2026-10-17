@@ -23,7 +23,7 @@ export async function chatReply(message: string): Promise<ChatAnswer> {
       // All open tasks, newest first, so tasks created a moment ago are always included.
       taskTitles: tasks.filter((t) => t.status === 'todo').sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((t) => t.title).slice(0, 60),
       ...(isConnected() ? {
-        mail: useGoogle.getState().mail.slice(0, 20).map((m) => ({ from: m.from, subject: m.subject, date: m.date, snippet: m.snippet.slice(0, 160) })),
+        mail: useGoogle.getState().mail.slice(0, 40).map((m) => ({ from: m.from, subject: m.subject, date: m.date, snippet: m.snippet.slice(0, 160) })),
         events: useGoogle.getState().events.slice(0, 15).map((e) => ({ title: e.title, start: e.start })),
       } : {}),
       policy: hits.map((h) => ({ doc: h.doc, text: h.text })),
