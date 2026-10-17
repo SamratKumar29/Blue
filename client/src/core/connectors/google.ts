@@ -145,6 +145,13 @@ async function api<T>(url: string): Promise<T> {
 
 const clean = (s: string) => (isCodebaseContent(s) ? '[hidden: looks like code]' : redactSecrets(s));
 
+// One-time codes must never be shown or sent to a model. For mail that looks like a verification/OTP
+// message, mask every 4-8 digit number (and dash/space-split codes like "123-456").
+const OTP_HINT = /\b(otp|one[- ]?time|verification|verify|passcode|pass code|security code|login code|sign[- ]?in code|2fa|two[- ]factor|authenticat\w*|confirmation code)\b/i;
+const CODE_RE = /\b(?:[A-Z]-)?\d{3,4}[- ]\d{3,4}\b|\b(?:[A-Z]-)?\d{4,8}\b/g;
+export const looksLikeOtp = (subject: string, snippet: string) => OTP_HINT.test(`${subject} ${snippet}`);
+export const maskCodes = (s: string) => s.replace(CODE_RE, '••••••');
+
 /** Lists mail matching a Gmail search query (default: last 48 hours). Metadata + snippet only. */
 export async function fetchMail(query = 'newer_than:2d', max = 25, onProgress?: (done: number, total: number) => void): Promise<MailItem[]> {
   if (!hasGmail()) return [];
@@ -160,12 +167,15 @@ export async function fetchMail(query = 'newer_than:2d', max = 25, onProgress?: 
     );
     report();
     const h = (n: string) => m.payload?.headers?.find((x) => x.name.toLowerCase() === n.toLowerCase())?.value ?? '';
+    let subject = clean(h('Subject') || '(no subject)');
+    let snippet = clean(decodeEntities(m.snippet ?? ''));
+    if (looksLikeOtp(subject, snippet)) { subject = maskCodes(subject); snippet = `[code hidden] ${maskCodes(snippet)}`; }
     return {
       id: m.id,
       from: h('From').replace(/<[^>]+>/, '').replace(/"/g, '').trim() || h('From'),
-      subject: clean(h('Subject') || '(no subject)'),
+      subject,
       date: h('Date'),
-      snippet: clean(decodeEntities(m.snippet ?? '')),
+      snippet,
       unread: (m.labelIds ?? []).includes('UNREAD'),
     } satisfies MailItem;
   }));
