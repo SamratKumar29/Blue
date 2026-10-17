@@ -186,7 +186,7 @@ export default function BlueMascot({ size = 56, mood = 'happy', className = '', 
       <span key={tick} className={`absolute inset-0 blue-body ${BODY[mood]} ${tick ? 'blue-wiggle' : ''}`}>
       <span className="blue-glow absolute inset-0" style={{ filter: sleeping ? undefined : undefined }}>
       <img
-        src="/logo.png"
+        src="/blue.png"
         alt=""
         draggable={false}
         width={size}
