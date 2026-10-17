@@ -1,0 +1,6 @@
+{
+  "name": "Blue — AI Work Companion",
+  "description": "Your privacy-first AI work companion. My Blue is my Blue, not your Blue.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
