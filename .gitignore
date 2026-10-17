@@ -39,3 +39,8 @@ client/public/litert-wasm
 
 # Local agent/session files
 .cortex/
+
+# Personal notes and submission drafts (not part of the app)
+Bugs.docx
+Bugs.pdf
+docs/Project Submission/
