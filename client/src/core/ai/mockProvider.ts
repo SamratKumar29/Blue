@@ -148,7 +148,7 @@ export class MockProvider implements ModelProvider {
         if (ANGRY.test(msg)) return "That sounds frustrating, and it's okay to feel that way. Want to take a short pause, or pick the smallest next step and leave the rest for later?";
         const best = (d.policy ?? [])[0];
         if (best) return `${String(best.text).split(/(?<=[.!?])\s/)[0]} [${best.doc}]`;
-        return `Here's where things stand: ${(d.taskTitles ?? []).slice(0, 3).join('; ') || 'no tasks yet'}. Tell me which one you'd like to start with.`;
+        return `I'm in offline demo mode, so I can't answer free-form questions right now. Your open tasks: ${(d.taskTitles ?? []).slice(0, 3).join('; ') || 'none yet'}. Switch to Gemini in Settings > AI Model for full answers.`;
       }
       default: return '{}';
     }
