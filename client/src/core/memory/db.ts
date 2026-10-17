@@ -2,11 +2,11 @@ import { openDB, IDBPDatabase } from 'idb';
 import { encryptJson, decryptJson, EncryptedPayload, destroyKey } from './crypto';
 
 const DB_NAME = 'blue-local-memory';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
-export type MemoryStoreName = 'settings' | 'tasks' | 'summaries' | 'audit' | 'outbox' | 'meta';
+export type MemoryStoreName = 'settings' | 'tasks' | 'summaries' | 'audit' | 'outbox' | 'meta' | 'files';
 
-const STORES: MemoryStoreName[] = ['settings', 'tasks', 'summaries', 'audit', 'outbox', 'meta'];
+const STORES: MemoryStoreName[] = ['settings', 'tasks', 'summaries', 'audit', 'outbox', 'meta', 'files'];
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 

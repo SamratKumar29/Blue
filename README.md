@@ -56,4 +56,14 @@ gcloud run deploy blue --source . --region us-central1 \
 
 The runtime service account needs only `roles/aiplatform.user`. No API key is used in production.
 
+## Gmail + Google Calendar (read-only)
+
+Sign-in runs in the browser with Google Identity Services. The access token stays in the tab's memory only. Blue reads mail headers and preview text (`gmail.readonly`) and events (`calendar.readonly`).
+
+1. Enable the APIs: `gcloud services enable gmail.googleapis.com calendar-json.googleapis.com`
+2. Google Cloud console > **Google Auth Platform**: set the audience to *External* and add your account (plus any judges) under **Test users**. Under **Data access**, add the `gmail.readonly` and `calendar.readonly` scopes.
+3. **Clients** > *Create client* > *Web application*. Under **Authorized JavaScript origins**, add `http://localhost:5173` and your Cloud Run URL.
+4. Put the client ID in `.env` as `GOOGLE_OAUTH_CLIENT_ID`. For Cloud Run, run:
+   `gcloud run services update blue --region us-central1 --update-env-vars GOOGLE_OAUTH_CLIENT_ID=<id>`
+
 All sample data is fictional.

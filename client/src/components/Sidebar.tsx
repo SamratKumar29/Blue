@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, MessageCircle, CheckSquare, Calendar, FolderOpen, Users, Grid3x3, Send, Settings, Keyboard, Moon, Sun, Sparkles, type LucideIcon } from 'lucide-react';
+import { Home, MessageCircle, CheckSquare, Calendar, FolderOpen, Users, Grid3x3, Send, Mail, Settings, Keyboard, Moon, Sun, Sparkles, type LucideIcon } from 'lucide-react';
 import { useBlueStore } from '../store';
 import { useUi } from '../ui';
 import BlueMascot from './BlueMascot';
 import { toggleTheme } from '../settings/Appearance';
+import { useGoogle } from '../core/connectors/google';
 
 const navItems: { path: string; label: string; icon: LucideIcon }[] = [
   { path: '/', label: 'Home', icon: Home },
@@ -25,6 +26,9 @@ const utilBtn = 'flex h-9 w-9 items-center justify-center rounded-xl text-slate-
 
 export default function Sidebar() {
   const name = useBlueStore((s) => s.settings.name);
+  const googleOn = useGoogle((s) => Boolean(s.token));
+  // The Inbox tab appears only after a successful Google sign-in.
+  const items = googleOn ? [...navItems.slice(0, 5), { path: '/inbox', label: 'Inbox', icon: Mail }, ...navItems.slice(5)] : navItems;
   const openSettings = useUi((s) => s.openSettings);
   const openDialog = useUi((s) => s.openDialog);
   const roundupOffered = useUi((s) => s.roundupOffered);
@@ -46,7 +50,7 @@ export default function Sidebar() {
           </span>
         </button>
         <div className="flex-1 flex flex-col items-center gap-0.5 w-full px-1">
-          {navItems.map(({ path, label, icon: Icon }) => (
+          {items.map(({ path, label, icon: Icon }) => (
             <NavLink key={path} to={path} end={path === '/'} aria-label={label} className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
               <Icon size={20} />
               <span>{label}</span>

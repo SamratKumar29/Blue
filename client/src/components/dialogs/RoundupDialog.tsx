@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Volume2, RefreshCw, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { RefreshCw, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useBlueStore } from '../../store';
 import { useUi } from '../../ui';
 import Modal, { btnGhost, btnPrimary } from '../Modal';
@@ -9,7 +9,6 @@ import { generateRoundup } from '../../core/features/roundup';
 import { chipLabel } from '../../core/connectors/demoWorkspace';
 import { friendlyAiError } from '../../core/ai/run';
 import { now } from '../../core/presence/demoClock';
-import { speak } from '../speak';
 import { GROUP_META, greeting } from '../ui';
 
 type Step = 'kickoff' | 'permission' | 'redo' | 'aborted' | 'working' | 'results';
@@ -97,7 +96,6 @@ export default function RoundupDialog() {
               </ul>
             ) : <p className="text-amber-600">No sources are switched on. Enable the Demo Workspace in Settings first.</p>}
           </div>
-          <button onClick={() => speak(summary)} className="mt-3 flex w-full items-center justify-between rounded-2xl bg-slate-50 px-4 py-2.5 text-sm text-muted hover:bg-slate-100"><span className="flex items-center gap-2"><Volume2 size={16} /> Tap to hear Blue's summary</span><span>→</span></button>
           {error && <p role="alert" className="mt-3 text-sm text-rose-500">{error}</p>}
           <div className="mt-5 flex justify-between gap-3">
             <button onClick={() => setStep('redo')} className={btnGhost}>Abort</button>

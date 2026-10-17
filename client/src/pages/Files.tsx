@@ -1,16 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Lock, FileText, ChevronDown, ChevronUp, Upload, Trash2, File, Image, FileSpreadsheet } from 'lucide-react';
 import { DOC_NAMES, docText, canUsePolicy } from '../core/features/retrieval';
 import { useBlueStore } from '../store';
 import { Card, EmptyState } from '../components/ui';
-
-interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  addedAt: string;
-}
+import { saveUpload, listUploads, removeUpload, type UploadedFile } from '../core/memory/files';
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -34,22 +27,19 @@ export default function Files() {
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => { listUploads().then(setUploads).catch(() => setUploads([])); }, []);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newFiles: UploadedFile[] = Array.from(files).map((f) => ({
-      id: `file_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      name: f.name,
-      size: f.size,
-      type: f.type || 'application/octet-stream',
-      addedAt: new Date().toISOString(),
-    }));
-    setUploads((prev) => [...newFiles, ...prev]);
-    showToast(`${newFiles.length} file${newFiles.length > 1 ? 's' : ''} added`);
+    const saved = await Promise.all(Array.from(files).map(saveUpload));
+    setUploads((prev) => [...saved, ...prev]);
+    showToast(`${saved.length} file${saved.length > 1 ? 's' : ''} added`);
     e.target.value = '';
   };
 
-  const removeFile = (id: string) => {
+  const removeFile = async (id: string) => {
+    await removeUpload(id);
     setUploads((prev) => prev.filter((f) => f.id !== id));
   };
 
@@ -78,7 +68,7 @@ export default function Files() {
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-500">{fileIcon(f.type)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-ink">{f.name}</p>
-                    <p className="text-xs text-muted">{formatSize(f.size)} · Added {new Date(f.addedAt).toLocaleString()}</p>
+                    <p className="text-xs text-muted">{formatSize(f.size)} · Added {new Date(f.addedAt).toLocaleString()} · {f.text ? 'Blue can search this' : f.skipped}</p>
                   </div>
                   <button onClick={() => removeFile(f.id)} aria-label={`Remove ${f.name}`} className="rounded-lg p-2 text-muted hover:bg-rose-50 hover:text-rose-500 transition">
                     <Trash2 size={16} />

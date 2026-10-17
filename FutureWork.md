@@ -9,17 +9,18 @@ What is left to do, Blue's current limitations, and the upgrades that would make
 - [ ] **Fix the 34 MB WebAssembly runtime file on Cloud Run.** `/litert-wasm/litertlm_wasm_asyncify_internal.wasm` (and its `compat` twin) returns HTTP 500 on the deployed URL. The likely cause is Cloud Run's 32 MiB limit on non-streamed responses. The 22 MB variants load fine. Fix: serve files over 30 MB chunked (streamed, without `Content-Length`), or enable HTTP/2 end to end. Then redeploy.
 - [ ] **Verify Local Gemma end to end on real WebGPU** (plan step S4.6). In Chrome or Edge on the live URL: Settings > AI Model > Download E2B (about 2.0 GB), or choose a `.litertlm` file. Switch to Local, then ask a question in Chat. Record the browser, GPU, load time and a sample reply. If this cannot be done before submission, describe local mode as "experimental" in the deck and video.
 - [ ] Browser smoke test of cloud mode on the live URL (S4.5, S7.5): Permission Center, roundup, triage, Why? popover, Ask a Senior with approval, blocked write, Privacy panel, Clear my Blue.
-- [ ] Redeploy so the clearer offline-demo chat message is live.
+- [ ] Create the Google OAuth client and set `GOOGLE_OAUTH_CLIENT_ID` on Cloud Run (see README), add test users, then redeploy.
 
 ---
 
 ## 2. Current limitations
 
 ### Data and connectors
-- **Demo data only.** Slack, Gmail and Calendar are fictional JSON files bundled with the app. No real accounts are connected.
+- **Gmail and Calendar are read-only and limited.** Real Google sign-in shows the last 48 hours of mail (sender, subject, preview text), mail search, and the next 14 days of events. Full email bodies are not read. The Google app is in "testing" mode, so only listed test users can sign in until Google verifies the app. Sign-in lasts for the tab only.
+- **Slack is not connected.** It is shown as "Coming soon". Slack-like items in the demo workspace are fictional.
 - **Sending is simulated.** Approved messages and meetings go to a local "Outbox (demo)". Nothing is actually sent or scheduled.
 - **The senior's side is simulated.** The Ask a Senior flow (accept, calendar check, scheduling) is scripted on the user's own device. No second person or second Blue is involved.
-- **Policy search is keyword-based.** Answers come from a small set of bundled sample policy documents. There are no embeddings and no search over the user's own documents.
+- **Search is keyword-based.** Blue searches the bundled policy documents and the user's uploaded text files (.txt, .md, .csv) by keyword. PDFs, Word files and images are stored but not read. There are no embeddings.
 
 ### AI models
 - **Local Gemma is unverified.** The download and file-picker flows exist, but no one has generated a reply on real WebGPU. The model download is large (2 to 3 GB), and on the deployed site one runtime file fails (see section 1).
@@ -47,7 +48,7 @@ What is left to do, Blue's current limitations, and the upgrades that would make
 ## 3. Upgrades that would make Blue extremely useful
 
 ### Real connectors (highest impact)
-1. **Real Google Workspace connectors.** Read-only OAuth for Gmail, Calendar and Drive with minimal scopes, plus the same summary-only memory and policy gate used today.
+1. **Deeper Google Workspace.** Done so far: read-only Gmail and Calendar. Next: Google app verification so anyone can sign in, Drive, opening full email threads on demand, and showing Google events in the main Calendar view.
 2. **Slack and Microsoft Teams connectors.** Read-only, channel by channel, chosen by the user.
 3. **Real but gated writes.** Sending a message or creating a calendar event only after the existing approval bound to the exact content. Undo window and full audit trail.
 4. **Jira, Linear or Asana task import.** Pull assigned tickets into triage, so tasks are no longer only extracted from messages.
@@ -69,7 +70,7 @@ What is left to do, Blue's current limitations, and the upgrades that would make
 14. **Mobile companion / PWA.** Morning roundup and check-ins on the phone, plus push notifications.
 15. **Encrypted backup and sync.** End-to-end encrypted with a key only the user holds, so memory survives a device change.
 16. **Multilingual support** (Hindi, Japanese, Bahasa and others) for the JAPAC workforce.
-17. **Voice.** Read the roundup aloud (the audio buttons already exist in the UI), plus voice input.
+17. **Voice.** Read the full roundup and analysis aloud, and add voice input. The first attempt only read headings, so the buttons were removed. `client/src/components/speak.ts` is kept for this.
 
 ### Trust, security and operations
 18. **Sign-in and per-user quotas.** Firebase Auth or Identity Platform in front of the API, with per-user rate limits shared across instances (for example Firestore or Memorystore).

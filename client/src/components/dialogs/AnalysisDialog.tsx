@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, Check, X, Volume2 } from 'lucide-react';
+import { FileText, Check, X } from 'lucide-react';
 import { useBlueStore } from '../../store';
 import { useUi } from '../../ui';
 import Modal, { btnGhost, btnPrimary } from '../Modal';
@@ -7,7 +7,6 @@ import { Aborted, RedoConfirm } from './AbortFlow';
 import { breakDownTask } from '../../core/features/checkin';
 import { friendlyAiError } from '../../core/ai/run';
 import type { Task } from '../../core/types';
-import { speak } from '../speak';
 
 function analyse(t: Task) {
   const complexity = t.effort === 'deep' || t.estimateMin >= 90 ? { label: 'High', cls: 'bg-rose-50 text-rose-500', text: 'Needs domain knowledge and probably several systems.' }
@@ -50,7 +49,6 @@ export default function AnalysisDialog({ taskId }: { taskId?: string }) {
       onClose={closeDialog}
       footer={step === 'plan' ? (
         <>
-          <button onClick={() => speak(summaryText)} aria-label="Read this aloud" className="mr-auto rounded-xl p-2.5 text-muted hover:bg-slate-100"><Volume2 size={18} /></button>
           <button onClick={proceed} disabled={busy} className={`${btnPrimary} inline-flex items-center gap-2`}><Check size={16} /> {busy ? 'Working…' : 'Yes, proceed'}</button>
           <button onClick={() => setStep('redo')} className={`${btnGhost} inline-flex items-center gap-2`}><X size={16} /> No, abort</button>
         </>

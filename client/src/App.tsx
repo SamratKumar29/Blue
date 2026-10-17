@@ -20,6 +20,7 @@ import Files from './pages/Files';
 import Team from './pages/Team';
 import Apps from './pages/Apps';
 import Outbox from './pages/Outbox';
+import Inbox from './pages/Inbox';
 
 export default function App() {
   const loadAll = useBlueStore((s) => s.loadAll);
@@ -88,6 +89,7 @@ export default function App() {
           <Route path="/team" element={<Team />} />
           <Route path="/apps" element={<Apps />} />
           <Route path="/outbox" element={<Outbox />} />
+          <Route path="/inbox" element={<Inbox />} />
         </Routes>
       </main>
       <Bubble />

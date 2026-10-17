@@ -64,12 +64,17 @@ function SearchBox() {
   );
 }
 
+// Notices the user has already looked at in this session (kept across page navigation).
+let seenNotices: string[] = [];
+
 export default function Home() {
   const { settings, tasks, outbox } = useBlueStore();
   const { openDialog, openSettings, roundupOffered, reminder, setReminder, presence, setRestOverride, restOverride } = useUi();
   const nav = useNavigate();
   const { data: ws, loading } = useWorkspaceSummary();
   const [bell, setBell] = useState(false);
+  const [seen, setSeenState] = useState<string[]>(seenNotices);
+  const setSeen = (n: string[]) => { seenNotices = n; setSeenState(n); };
 
   const clock = useLiveClock(settings.timezone);
   const presenceLabel = presence === 'active' ? 'Active' : presence === 'preroll' ? 'Waking up' : presence === 'sleeping' ? 'Resting' : 'Paused';
@@ -122,8 +127,8 @@ export default function Home() {
               <span className="text-muted font-normal">{clock.date}</span>
             </div>
 
-            <button onClick={() => setBell(!bell)} aria-label={`Notifications${notices.length ? ` (${notices.length})` : ''}`} aria-expanded={bell} className="relative rounded-full bg-white/70 p-2.5 text-ink hover:bg-white">
-              <Bell size={18} />{notices.length > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />}
+            <button onClick={() => { setBell(!bell); setSeen(notices); }} aria-label={`Notifications${notices.length ? ` (${notices.length})` : ''}`} aria-expanded={bell} className="relative rounded-full bg-white/70 p-2.5 text-ink hover:bg-white">
+              <Bell size={18} />{notices.some((n) => !seen.includes(n)) && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />}
             </button>
             <button onClick={() => openSettings('about')} aria-label="Help and about Blue" className="rounded-full bg-white/70 p-2.5 text-ink hover:bg-white"><HelpCircle size={18} /></button>
             <button onClick={() => openSettings()} aria-label="Open settings" className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">{initials(settings.name)}</button>
@@ -168,7 +173,7 @@ export default function Home() {
         </Card>
 
         <Card className="p-5">
-          <CardHeader icon={<Users size={16} />} title="Team Updates" action={<button onClick={() => nav('/chat')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
+          <CardHeader icon={<Users size={16} />} title="Team Updates" action={<button onClick={() => openDialog('roundup')} className="text-xs font-semibold text-blue-600 hover:underline">View all →</button>} />
           {settings.paused ? (
             <EmptyState title="Blue is paused" hint="Nothing is being read. Updates return when you resume Blue." />
           ) : !settings.allowConnectors ? (

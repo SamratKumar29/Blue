@@ -7,6 +7,21 @@ import { friendlyAiError } from '../core/ai/run';
 import { docText } from '../core/features/retrieval';
 import { useUi } from '../ui';
 
+// Minimal, safe formatting for model replies: **bold** and "- " bullets. No HTML is injected.
+function RichText({ text }: { text: string }) {
+  const inline = (s: string) => s.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') ? <strong key={i}>{part.slice(2, -2)}</strong> : <span key={i}>{part.replace(/\*\*/g, '')}</span>);
+  return (
+    <div className="space-y-1">
+      {text.split('\n').map((line, i) => {
+        const b = line.match(/^\s*[-*•]\s+(.*)$/);
+        if (b) return <p key={i} className="flex gap-2 pl-1"><span aria-hidden="true">•</span><span>{inline(b[1])}</span></p>;
+        return line.trim() ? <p key={i}>{inline(line)}</p> : <div key={i} className="h-1" />;
+      })}
+    </div>
+  );
+}
+
 interface Msg { role: 'user' | 'blue'; text: string; sources?: string[]; error?: boolean }
 
 export default function Chat() {
@@ -61,7 +76,7 @@ export default function Chat() {
         {msgs.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${m.role === 'user' ? 'bg-blue-500 text-white' : m.error ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-ink'}`}>
-              <p className="whitespace-pre-wrap">{m.text}</p>
+              {m.role === 'blue' ? <RichText text={m.text} /> : <p className="whitespace-pre-wrap">{m.text}</p>}
               {m.sources && m.sources.length > 0 && <p className="mt-2 flex flex-wrap gap-1.5">{m.sources.map((s) => <span key={s} className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-blue-600">📄 {s}</span>)}</p>}
               {m.role === 'blue' && !m.error && <button onClick={() => save(i)} disabled={saved === i} className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-muted hover:text-blue-600 disabled:text-good"><BookmarkPlus size={12} /> {saved === i ? 'Saved' : 'Save this note'}</button>}
             </div>

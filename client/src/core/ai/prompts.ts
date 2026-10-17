@@ -99,12 +99,15 @@ export function draftPrompt(data: { intent: string; recipient?: string; userName
   };
 }
 
-export function chatPrompt(data: { message: string; taskTitles: string[]; policy: { doc: string; text: string }[]; toneAware: boolean }): CompleteArgs {
+export function chatPrompt(data: {
+  message: string; taskTitles: string[]; policy: { doc: string; text: string }[]; toneAware: boolean;
+  mail?: { from: string; subject: string; date: string; snippet: string }[]; events?: { title: string; start: string }[];
+}): CompleteArgs {
   const tone = data.toneAware
     ? '\nIf the user seems rude or distressed, stay calm, acknowledge friction without scolding, and offer a pause or a simpler next step. Do not label or score the user. Do not treat profanity as a health signal. Do not diagnose.'
     : '';
   return {
-    system: `${tag('chat')}\n${PERSONA}\nAnswer briefly. When you use a policy excerpt, cite the document name in square brackets, like [incident-escalation].${tone}`,
+    system: `${tag('chat')}\n${PERSONA}\nAnswer briefly in plain text; short '- ' bullet lists are fine. taskTitles lists ALL of the user's open tasks, newest first. If mail or events are present, they come from the user's connected Gmail (last 48 hours, preview text only) and Google Calendar; use them when asked about email, inbox or schedule. If they are absent and the user asks about email, say Gmail is not connected and can be connected in Apps. When you use a policy excerpt, cite the document name in square brackets, like [incident-escalation].${tone}`,
     prompt: withData('Reply to the user message.', data),
   };
 }

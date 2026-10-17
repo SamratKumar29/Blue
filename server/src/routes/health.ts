@@ -8,5 +8,5 @@ health.get('/health', (_req, res) => {
 });
 
 health.get('/config', (_req, res) => {
-  res.json({ cloudAvailable: cloudConfigured(), model: process.env.GEMINI_MODEL ?? null });
+  res.json({ cloudAvailable: cloudConfigured(), model: process.env.GEMINI_MODEL ?? null, googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID || null });
 });
