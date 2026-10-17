@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+server/public
+.env
+.env.*
+.git
+.cortex
+docs
+e2e
+gui_reference
+*.log
